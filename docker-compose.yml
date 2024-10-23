@@ -1,0 +1,14 @@
+services:
+  db:
+      image: mysql:8
+      container_name: project
+      environment:
+        MYSQL_ROOT_PASSWORD: rootpassword
+        MYSQL_DATABASE: inventorydb
+        MYSQL_USER: user
+        MYSQL_PASSWORD: userpassword
+      ports:
+        - "4000:4000"
+      volumes:
+        - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+        - ./mysql_data:/var/lib/mysql  # Ensure persistent data storage
