@@ -8,7 +8,20 @@ services:
         MYSQL_USER: user
         MYSQL_PASSWORD: userpassword
       ports:
-        - "4000:4000"
+        - "3306:3306"
       volumes:
         - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
-        - ./mysql_data:/var/lib/mysql  # Ensure persistent data storage
+        - ./mysql_data:/var/lib/mysql
+
+  nodejs:
+    image: node:18
+    container_name: node_app
+    volumes:
+      - ./frontend:/usr/src/frontend
+      - ./backend:/usr/src/app
+    working_dir: /usr/src/app
+    ports:
+      - "4000:4000"
+    depends_on:
+      - db
+    command: bash -c "npm install -g npm@6 && npm install && npm start"

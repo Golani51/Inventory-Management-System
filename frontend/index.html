@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Project</title>
+    <link rel="style" href="/styles.css">
+</head>
+
+<body>
+    <h1>Inventory</h1>
+
+    <div id="inventory_list">
+        Loading inventory...
+    </div>
+
+    <!-- Will be moved to script.js -->
+    <!-- Displaying Inventory and Products table only -->
+    <script>
+        fetch('/Inventory')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                const inventoryDiv = document.getElementById('inventory_list');
+                inventoryDiv.innerHTML = ''; 
+
+                if (data.length > 0) {
+                    const ul = document.createElement('ul');
+
+                    // Table Columns from query in Index.js
+                    data.forEach(item => {
+                        const li = document.createElement('li');
+                        li.textContent = `ID: ${item.ProductID}, Name: ${item.name}, CurrentQuantity: ${item.quantity}, 
+                        MaximumQuantity: ${item.maxqt}, Location: ${item.location}, ${item.state}`;
+                        ul.appendChild(li);
+                    });
+                    inventoryDiv.appendChild(ul);
+
+                } else {
+                    inventoryDiv.textContent = 'No inventory items found.';
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching inventory:', error);
+                document.getElementById('inventory_list').textContent = 'Error loading inventory';
+            });
+
+    </script>
+</body>
+</html>
