@@ -23,7 +23,7 @@ DROP TABLE IF EXISTS `AuditLogs`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `AuditLogs` (
-  `LogID` int NOT NULL,
+  `LogID` int NOT NULL AUTO_INCREMENT,
   `ProductID` int DEFAULT NULL,
   `InventoryID` int DEFAULT NULL,
   `EmployeeID` int DEFAULT NULL,
@@ -37,7 +37,7 @@ CREATE TABLE `AuditLogs` (
   CONSTRAINT `auditlogs_ibfk_1` FOREIGN KEY (`ProductID`) REFERENCES `Products` (`ProductID`),
   CONSTRAINT `auditlogs_ibfk_2` FOREIGN KEY (`InventoryID`) REFERENCES `Inventory` (`InventoryID`),
   CONSTRAINT `auditlogs_ibfk_3` FOREIGN KEY (`EmployeeID`) REFERENCES `Employees` (`EmployeeID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -46,6 +46,7 @@ CREATE TABLE `AuditLogs` (
 
 LOCK TABLES `AuditLogs` WRITE;
 /*!40000 ALTER TABLE `AuditLogs` DISABLE KEYS */;
+INSERT INTO `AuditLogs` VALUES (1,1,1,NULL,'2024-10-25 19:12:34','Restock',2);
 /*!40000 ALTER TABLE `AuditLogs` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -104,7 +105,7 @@ CREATE TABLE `Inventory` (
 
 LOCK TABLES `Inventory` WRITE;
 /*!40000 ALTER TABLE `Inventory` DISABLE KEYS */;
-INSERT INTO `Inventory` VALUES (1,1,10,'Fort Bragg','NC',12,0.2),(2,2,20,'Edwards AFB','CA',24,0.25),(3,3,45,'Naval Base San Diego','CA',125,0.1),(4,4,180,'Fort Benning','GA',200,0.3),(5,5,3,'Norfolk Naval Shipyard','VA',3,0.1);
+INSERT INTO `Inventory` VALUES (1,1,12,'Fort Bragg','NC',12,0.2),(2,2,20,'Edwards AFB','CA',24,0.25),(3,3,45,'Naval Base San Diego','CA',125,0.1),(4,4,180,'Fort Benning','GA',200,0.3),(5,5,3,'Norfolk Naval Shipyard','VA',3,0.1);
 /*!40000 ALTER TABLE `Inventory` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -136,6 +137,41 @@ LOCK TABLES `OrderDetails` WRITE;
 /*!40000 ALTER TABLE `OrderDetails` DISABLE KEYS */;
 /*!40000 ALTER TABLE `OrderDetails` ENABLE KEYS */;
 UNLOCK TABLES;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = latin1 */ ;
+/*!50003 SET character_set_results = latin1 */ ;
+/*!50003 SET collation_connection  = latin1_swedish_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `add_inventory_after_order` AFTER INSERT ON `orderdetails` FOR EACH ROW BEGIN
+    DECLARE current_stock INT;
+    DECLARE inventory_id INT;
+
+    -- Get the current stock level (CurrentQuantity) and InventoryID for the ordered product
+    SELECT CurrentQuantity, InventoryID
+    INTO current_stock, inventory_id
+    FROM Inventory
+    WHERE ProductID = NEW.ProductID;
+
+    -- Update the inventory quantity by adding the ordered amount
+    IF current_stock IS NOT NULL THEN
+        UPDATE Inventory
+        SET CurrentQuantity = current_stock + NEW.Quantity
+        WHERE ProductID = NEW.ProductID;
+    END IF;
+    
+    -- Log the transaction in AuditLogs with the correct InventoryID
+    INSERT INTO AuditLogs (ProductID, InventoryID, TransactionDate, TransactionType, QuantityChanged)
+    VALUES (NEW.ProductID, inventory_id, NOW(), 'Restock', NEW.Quantity);
+END */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 
 --
 -- Table structure for table `Orders`
@@ -145,7 +181,7 @@ DROP TABLE IF EXISTS `Orders`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `Orders` (
-  `OrderID` int NOT NULL,
+  `OrderID` int NOT NULL AUTO_INCREMENT,
   `EmployeeID` int DEFAULT NULL,
   `OrderDate` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`OrderID`),
@@ -255,4 +291,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-10-23  8:38:46
+-- Dump completed on 2024-10-25 19:16:47
