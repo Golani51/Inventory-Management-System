@@ -1,12 +1,21 @@
-FROM node:18
-WORKDIR /usr/src/app
+# Use a Python image
+FROM python:3.9
 
-# Downgrade to NPM 6 because of an error
-RUN npm install -g npm@6
+# Set the working directory
+WORKDIR /app
 
-COPY package*.json ./
-RUN npm install
+# Copy requirements.txt from the backend folder and install dependencies
+COPY backend/requirements.txt /app/
+RUN pip install -r requirements.txt
 
-COPY . .
+# Copy the rest of the backend application files
+COPY backend/ /app
 
-CMD ["npm", "start"]
+# Copy the frontend directory
+COPY frontend/ /app/frontend
+
+# Expose the Flask port
+EXPOSE 4000
+
+# Run the Flask application
+CMD ["flask", "run", "--host=0.0.0.0", "--port=4000"]

@@ -1,27 +1,32 @@
+version: "3.8"
+
 services:
   db:
-      image: mysql:8
-      container_name: project
-      environment:
-        MYSQL_ROOT_PASSWORD: rootpassword
-        MYSQL_DATABASE: inventorydb
-        MYSQL_USER: user
-        MYSQL_PASSWORD: userpassword
-      ports:
-        - "3306:3306"
-      volumes:
-        - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
-        - ./mysql_data:/var/lib/mysql
-
-  nodejs:
-    image: node:18
-    container_name: node_app
+    image: mysql:8
+    container_name: project
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: inventorydb
+      MYSQL_USER: user
+      MYSQL_PASSWORD: userpassword
+    ports:
+      - "3306:3306"
     volumes:
-      - ./frontend:/usr/src/frontend
-      - ./backend:/usr/src/app
-    working_dir: /usr/src/app
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./mysql_data:/var/lib/mysql
+
+  flask:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: flask_app
     ports:
       - "4000:4000"
+    environment:
+      FLASK_ENV: development
+      MYSQL_HOST: db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: userpassword
+      MYSQL_DB: inventorydb
     depends_on:
       - db
-    command: bash -c "npm install -g npm@6 && npm install && npm start"

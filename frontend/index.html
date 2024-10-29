@@ -26,43 +26,41 @@
     <!-- Will be moved to script.js -->
     <!-- Displaying Inventory and Products table only -->
     <script>
-        function fetchInventory() {
-            fetch('/Inventory')
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    const inventoryDiv = document.getElementById('inventory_list');
-                    inventoryDiv.innerHTML = ''; 
+        // Function to fetch and display inventory
+        async function fetchInventory() {
+            try {
+                const response = await fetch('/Inventory');
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
-                    if (data.length > 0) {
-                        const ul = document.createElement('ul');
+                const data = await response.json();
+                const inventoryDiv = document.getElementById('inventory_list');
+                inventoryDiv.innerHTML = '';
 
-                        // Table Columns from query in Index.js
-                        data.forEach(item => {
-                            const li = document.createElement('li');
-                            li.textContent = `ID: ${item.ProductID}, Name: ${item.name}, CurrentQuantity: ${item.quantity}, 
-                            MaximumQuantity: ${item.maxqt}, Location: ${item.location}, ${item.state}`;
-                            ul.appendChild(li);
-                        });
-                        inventoryDiv.appendChild(ul);
+                if (data.length > 0) {
+                    const ul = document.createElement('ul');
+                    data.forEach(item => {
+                        const li = document.createElement('li');
+                        li.textContent = `ID: ${item.ProductID}, Name: ${item.name}, CurrentQuantity: ${item.quantity}, 
+                        MaximumQuantity: ${item.maxqt}, Location: ${item.location}, ${item.state}`;
+                        ul.appendChild(li);
+                    });
+                    inventoryDiv.appendChild(ul);
 
-                    } else {
-                        inventoryDiv.textContent = 'No inventory items found.';
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching inventory:', error);
-                    document.getElementById('inventory_list').textContent = 'Error loading inventory';
-                });
+                } else {
+                    inventoryDiv.textContent = 'No inventory items found.';
+                }
+
+            } catch (error) {
+                console.error('Error fetching inventory:', error);
+                document.getElementById('inventory_list').textContent = 'Error loading inventory';
+            }
         }
 
+        // Fetch inventory on page load
         fetchInventory();
 
-        document.getElementById('orderForm').addEventListener('submit', function(event) {
+        // Form submission handler to place a new order
+        document.getElementById('orderForm').addEventListener('submit', async function(event) {
             event.preventDefault();
 
             const orderData = {
@@ -70,50 +68,46 @@
                 quantity: parseInt(document.getElementById('order_quantity').value)
             };
 
-            fetch('/Orders',{
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(orderData)
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
+            try {
+                const response = await fetch('/Orders', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(orderData)
+                });
+
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                
+                const data = await response.json();
                 alert('Order placed successfully!');
                 document.getElementById('orderForm').reset();
+
                 fetchInventory();
-            })
-            .catch(error => {
+
+            } catch (error) {
                 console.error('Error placing order:', error);
                 alert('Error placing order');
-            });
-        });
-
-        document.getElementById('resetOrderButton').addEventListener('click', function() {
-            if (confirm('Are you sure you want to delete all orders and reset inventory quantities?')) {
-            fetch('/reset-orders', { method: 'DELETE' })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('HTTP error ' + response.status);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    alert(data.message);
-                    fetchInventory();  // Refresh inventory display
-                })
-                .catch(error => {
-                    console.error('Error resetting orders:', error);
-                    alert('Error resetting orders');
-                });
             }
         });
 
+        // Button handler to reset orders and inventory quantities
+        document.getElementById('resetOrderButton').addEventListener('click', async function() {
+            if (confirm('Are you sure you want to delete all orders and reset inventory quantities?')) {
+                try {
+                    const response = await fetch('/reset-orders', { method: 'DELETE' });
+                    if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+
+                    const data = await response.json();
+                    alert(data.message);
+                    fetchInventory();
+                    
+                } catch (error) {
+                    console.error('Error resetting orders:', error);
+                    alert('Error resetting orders');
+                }
+            }
+        });
     </script>
 </body>
 </html>
