@@ -1,31 +1,124 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <title>Project</title>
-    <link rel="style" href="/styles.css">
+    <title>Inventory Management</title>
+    <link rel="stylesheet" href="/static/styles.css">
 </head>
 
 <body>
-    <h1>Inventory</h1>
+    <h1>Inventory Management</h1>
 
-    <div id="inventory_list">
+    <!-- Login Section -->
+    <div id="login_section">
+        <h2>Login</h2>
+        <form id="loginForm">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required><br>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required><br>
+            <button type="submit">Login</button>
+        </form>
+        <button id="logoutButton" style="display: none;">Logout</button>
+        <p id="user_info" style="display: none;"></p>
+    </div>
+
+    <!-- Inventory List (Visible when logged in successfully)-->
+    <div id="inventory_list" style="display: none;">
         Loading inventory...
     </div>
 
-    <h2>Create New Order</h2>
-    <form id="orderForm">
-        <label for = "product_id"> Product ID: </label>
-        <input type = "number" id = "product_id" name = "product_id" required><br>
-        <label for = "order_quantity"> Quantity: </label>
-        <input type = "number" id = "order_quantity" name = "order_quantity" required><br>
-        <button type = "submit"> Place Order </button>
-    </form>
+    <!-- Order Section (Visible to admin only) -->
+    <div id="order_section" style="display: none;">
+        <h2>Create New Order</h2>
+        <form id="orderForm">
+            <label for="product_id">Product ID:</label>
+            <input type="number" id="product_id" name="product_id" required><br>
+            <label for="order_quantity">Quantity:</label>
+            <input type="number" id="order_quantity" name="order_quantity" required><br>
+            <button type="submit">Place Order</button>
+        </form>
 
-    <button id = "resetOrderButton"> Reset Orders </button>
+        <button id="resetOrderButton" style="display: none;">Reset Orders</button>
+    </div>
 
-    <!-- Will be moved to script.js -->
-    <!-- Displaying Inventory and Products table only -->
     <script>
+        // Check session on page load to show/hide sections based on user role
+        async function checkSession() {
+            const response = await fetch('/check-session');
+            const inventoryDiv = document.getElementById('inventory_list');
+
+            if (response.ok) {
+                const data = await response.json();
+                showUserInfo(data);
+                fetchInventory();
+
+            } else {
+                // Hide inventory if user is not logged in
+                inventoryDiv.style.display = 'none';
+            }
+        }
+
+        // Display user info and controls based on role
+        function showUserInfo(data) {
+            // Log-in form disappears
+            document.getElementById('loginForm').style.display = 'none';
+
+            // Log-out button appears
+            document.getElementById('logoutButton').style.display = 'inline';
+
+            // User info appears
+            document.getElementById('user_info').style.display = 'block';
+            document.getElementById('user_info').textContent = `Logged in as ${data.username} (${data.role})`;
+            
+            // Inventory appears
+            document.getElementById('inventory_list').style.display = 'block';
+
+            if (data.role === 'admin') {
+                document.getElementById('order_section').style.display = 'block';
+                document.getElementById('resetOrderButton').style.display = 'inline';
+            }
+        }
+
+        // Login form submission handler
+        document.getElementById('loginForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            // Get username and password
+            const loginData = {
+                username: document.getElementById('username').value,
+                password: document.getElementById('password').value
+            };
+
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(loginData)
+                });
+
+                // If username and password are found in the database,
+                // show user info and inventory
+                if (response.ok) {
+                    const data = await response.json();
+                    showUserInfo(data);
+                    fetchInventory();
+
+                } else {
+                    alert('Login failed');
+                }
+
+            } catch (error) {
+                console.error('Error logging in:', error);
+            }
+        });
+
+        // Logout handler
+        document.getElementById('logoutButton').addEventListener('click', async function() {
+            await fetch('/logout');
+            location.reload();  // Reload to reset the page
+        });
+
         // Function to fetch and display inventory
         async function fetchInventory() {
             try {
@@ -56,10 +149,7 @@
             }
         }
 
-        // Fetch inventory on page load
-        fetchInventory();
-
-        // Form submission handler to place a new order
+        // Order form submission handler
         document.getElementById('orderForm').addEventListener('submit', async function(event) {
             event.preventDefault();
 
@@ -71,18 +161,14 @@
             try {
                 const response = await fetch('/Orders', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(orderData)
                 });
 
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 
-                const data = await response.json();
                 alert('Order placed successfully!');
                 document.getElementById('orderForm').reset();
-
                 fetchInventory();
 
             } catch (error) {
@@ -91,15 +177,14 @@
             }
         });
 
-        // Button handler to reset orders and inventory quantities
+        // Reset orders button handler
         document.getElementById('resetOrderButton').addEventListener('click', async function() {
             if (confirm('Are you sure you want to delete all orders and reset inventory quantities?')) {
                 try {
                     const response = await fetch('/reset-orders', { method: 'DELETE' });
                     if (!response.ok) throw new Error(`HTTP error ${response.status}`);
 
-                    const data = await response.json();
-                    alert(data.message);
+                    alert('Orders reset successfully');
                     fetchInventory();
                     
                 } catch (error) {
@@ -108,6 +193,11 @@
                 }
             }
         });
+
+        // Initialize page
+        checkSession();
+        fetchInventory();
+
     </script>
 </body>
 </html>

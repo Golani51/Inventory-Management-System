@@ -37,7 +37,7 @@ CREATE TABLE `AuditLogs` (
   CONSTRAINT `auditlogs_ibfk_1` FOREIGN KEY (`ProductID`) REFERENCES `Products` (`ProductID`),
   CONSTRAINT `auditlogs_ibfk_2` FOREIGN KEY (`InventoryID`) REFERENCES `Inventory` (`InventoryID`),
   CONSTRAINT `auditlogs_ibfk_3` FOREIGN KEY (`EmployeeID`) REFERENCES `Employees` (`EmployeeID`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -46,7 +46,6 @@ CREATE TABLE `AuditLogs` (
 
 LOCK TABLES `AuditLogs` WRITE;
 /*!40000 ALTER TABLE `AuditLogs` DISABLE KEYS */;
-INSERT INTO `AuditLogs` VALUES (1,1,1,NULL,'2024-10-25 19:12:34','Restock',2);
 /*!40000 ALTER TABLE `AuditLogs` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -61,10 +60,14 @@ CREATE TABLE `Employees` (
   `EmployeeID` int NOT NULL,
   `FirstName` varchar(255) DEFAULT NULL,
   `LastName` varchar(255) DEFAULT NULL,
-  `Role` varchar(255) DEFAULT NULL,
+  `CurrentPosition` varchar(255) DEFAULT NULL,
   `Email` varchar(255) DEFAULT NULL,
   `Phone` varchar(15) DEFAULT NULL,
-  PRIMARY KEY (`EmployeeID`)
+  `Username` varchar(50) NOT NULL,
+  `Password_hash` varchar(255) NOT NULL,
+  `Role` enum('admin','user') NOT NULL,
+  PRIMARY KEY (`EmployeeID`),
+  UNIQUE KEY `username` (`Username`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -74,7 +77,7 @@ CREATE TABLE `Employees` (
 
 LOCK TABLES `Employees` WRITE;
 /*!40000 ALTER TABLE `Employees` DISABLE KEYS */;
-INSERT INTO `Employees` VALUES (1,'Joshua','Hur','Aircraft Maintenance Technician','jhur1@umbc.edu','(301) 787-9455'),(2,'Matthew','Dyson','Colonel','mdyson2@umbc.edu','(301) 131-2342'),(3,'Jon','Woods','Captain','jwoods6@umbc.edu','(240) 564-3556'),(4,'Alexander','Gudat','Lieutenant','agudat1@umbc.edu','(443) 612-1364'),(5,'Ben','Maher','Weapons Specialist','bmaher1@umbc.edu','(301) 311-2542');
+INSERT INTO `Employees` VALUES (1,'Joshua','Hur','Aircraft Maintenance Technician','jhur1@umbc.edu','(301) 787-9455','employee_1','$2b$12$web02jNxFJqjD/AtByVw0ei7nR92O5X8BogvwHlguhr.4hWA2WyCa','admin'),(2,'Matthew','Dyson','Colonel','mdyson2@umbc.edu','(301) 131-2342','employee_2','$2b$12$LS1GqydL7e/CG7fnFOLaMeqefqY9c4SvHvRNbtZo1/5Ua7gRkHBz2','admin'),(3,'Jon','Woods','Captain','jwoods6@umbc.edu','(240) 564-3556','employee_3','$2b$12$3MUweVh0kGOXb59nrARPG.xkY7pcVDW9yj9nbzAvrBee9PISiUoZO','user'),(4,'Alexander','Gudat','Lieutenant','agudat1@umbc.edu','(443) 612-1364','employee_4','$2b$12$m7JYFxNOr3fkt2ucAOHpeue.3AnsoQDgiGxds5KW7juJ5prcOzpwK','user'),(5,'Ben','Maher','Weapons Specialist','bmaher1@umbc.edu','(301) 311-2542','employee_5','$2b$12$6UvqAGA9drSMELXoH9tnW.UyYUblriyIFwhZMtmnkscFQnH.VhBl2','user');
 /*!40000 ALTER TABLE `Employees` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -105,7 +108,7 @@ CREATE TABLE `Inventory` (
 
 LOCK TABLES `Inventory` WRITE;
 /*!40000 ALTER TABLE `Inventory` DISABLE KEYS */;
-INSERT INTO `Inventory` VALUES (1,1,12,'Fort Bragg','NC',12,0.2),(2,2,20,'Edwards AFB','CA',24,0.25),(3,3,45,'Naval Base San Diego','CA',125,0.1),(4,4,180,'Fort Benning','GA',200,0.3),(5,5,3,'Norfolk Naval Shipyard','VA',3,0.1);
+INSERT INTO `Inventory` VALUES (1,1,22,'Fort Bragg','NC',12,0.2),(2,2,35,'Edwards AFB','CA',24,0.25),(3,3,45,'Naval Base San Diego','CA',125,0.1),(4,4,195,'Fort Benning','GA',200,0.3),(5,5,3,'Norfolk Naval Shipyard','VA',3,0.1);
 /*!40000 ALTER TABLE `Inventory` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -187,7 +190,7 @@ CREATE TABLE `Orders` (
   PRIMARY KEY (`OrderID`),
   KEY `EmployeeID` (`EmployeeID`),
   CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`EmployeeID`) REFERENCES `Employees` (`EmployeeID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -291,4 +294,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-10-25 19:16:47
+-- Dump completed on 2024-11-06 19:54:01

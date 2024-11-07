@@ -27,6 +27,8 @@ services:
       MYSQL_HOST: db
       MYSQL_USER: user
       MYSQL_PASSWORD: userpassword
-      MYSQL_DB: inventorydb
+      MYSQL_DB: inventorydb      
+      SECRET_KEY: "user_secret_key"
+
     depends_on:
       - db

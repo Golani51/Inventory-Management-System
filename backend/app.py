@@ -1,9 +1,18 @@
 import os
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory, session
+from flask_bcrypt import Bcrypt
 import mysql.connector
 from datetime import datetime
 
-app = Flask(__name__)
+
+app = Flask(__name__, static_folder='frontend') # Configure html and css file
+bcrypt = Bcrypt(app) # To match encrypted password with stored hash password
+app.secret_key = os.environ.get('SECRET_KEY', 'default_secret_key') # Need for session
+
+# Serve the static files (css) from the frontend directory
+@app.route('/static/<path:filename>')
+def serve_static(filename):
+    return send_from_directory('frontend', filename)
 
 # Serve the index.html file at the root URL
 @app.route('/')
@@ -19,11 +28,55 @@ def get_db_connection():
         database=os.environ.get('MYSQL_DB', 'inventorydb')
     )
 
+# Check session status
+@app.route('/check-session')
+def check_session():
+    if 'employee_id' in session:
+        return jsonify({"username": session['username'], "role": session['role']}), 200
+    
+    else:
+        return jsonify({"error": "Not logged in"}), 401
+    
+# Login
+# Check username and password
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.json
+    username = data['username']
+    password = data['password']
+    
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary = True)
+        cursor.execute('SELECT * FROM Employees WHERE username = %s', (username,))
+        user = cursor.fetchone()
+        cursor.close()
+        conn.close()
+
+        if user and bcrypt.check_password_hash(user['Password_hash'], password):
+            session['employee_id'] = user['EmployeeID']
+            session['role'] = user['Role']
+            session['username'] = user['Username']
+            return jsonify({"username": user['Username'], "role": user['Role']}), 200
+        
+        else:
+            return jsonify({"error": "Invalid credentials"}), 401
+        
+    except Exception as e:
+        print("Login error:", e) 
+        return jsonify({"error": "Internal Server Error"}), 500
+
+# Logout
+@app.route('/logout')
+def logout():
+    session.clear()
+    return jsonify({"message": "Logged out successfully"}), 200
+
 # Route to get all inventory items
 @app.route('/Inventory', methods=['GET'])
 def get_inventory():
     connection = get_db_connection()
-    cursor = connection.cursor(dictionary=True)
+    cursor = connection.cursor(dictionary = True)
     cursor.execute("""
         SELECT Inventory.InventoryID, Inventory.ProductID, Inventory.MaxCapacity as maxqt, 
                Inventory.AssignedLocation as location, Inventory.LocationState as state, 
@@ -39,16 +92,25 @@ def get_inventory():
 # Create a new order
 @app.route('/Orders', methods=['POST'])
 def create_order():
+
+    # Only allow admin can submit an order
+    if not session['employee_id']:
+        return {'error': 'Login required'}, 401
+    
+    if session['role'] != 'admin':
+        return {'error': 'Unauthorized'}, 403
+
     data = request.json
-    product_id = data.get('product_id')
-    quantity = data.get('quantity')
+    product_id = data['product_id']
+    quantity = data['quantity']
+    created_by = session['employee_id']
 
     try:
-        connection = get_db_connection()
-        cursor = connection.cursor()
+        conn = get_db_connection()
+        cursor = conn.cursor()
 
         # Insert into Orders table
-        cursor.execute("INSERT INTO Orders (OrderDate) VALUES (%s)", (datetime.now(),))
+        cursor.execute("INSERT INTO Orders (OrderDate, EmployeeID) VALUES (%s, %s)", (datetime.now(), created_by))
         order_id = cursor.lastrowid
 
         # Insert into OrderDetails table
@@ -57,9 +119,9 @@ def create_order():
             (order_id, product_id, quantity)
         )
 
-        connection.commit()
+        conn.commit()
         cursor.close()
-        connection.close()
+        conn.close()
         return jsonify({"message": "Order created successfully"}), 200
     
     except Exception as e:
