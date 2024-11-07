@@ -1,0 +1,25 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: rgb(255, 255, 255);
+    padding: 30px;
+}
+
+h1{
+    color: #ff0000;
+}
+
+h2{
+    color: #ff8f3e;
+}
+
+label{
+    color: #adb600;
+}
+
+li{
+    color: #02b002;
+}
+
+#user_info{
+    color: #0003b6bb;
+}
