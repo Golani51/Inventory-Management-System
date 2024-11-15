@@ -9,15 +9,10 @@ app = Flask(__name__, static_folder='frontend') # Configure html and css file
 bcrypt = Bcrypt(app) # To match encrypted password with stored hash password
 app.secret_key = os.environ.get('SECRET_KEY', 'default_secret_key') # Need for session
 
-# Serve the static files (css) from the frontend directory
-@app.route('/static/<path:filename>')
-def serve_static(filename):
-    return send_from_directory('frontend', filename)
-
 # Serve the index.html file at the root URL
 @app.route('/')
 def serve_index():
-    return send_from_directory('frontend', 'index.html')
+    return send_from_directory(app.static_folder, 'index.html')
 
 # Create a database connection
 def get_db_connection():

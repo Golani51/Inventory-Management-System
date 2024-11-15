@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   db:
     image: mysql:8
@@ -29,6 +27,7 @@ services:
       MYSQL_PASSWORD: userpassword
       MYSQL_DB: inventorydb      
       SECRET_KEY: "user_secret_key"
-
+    volumes:
+      - ./frontend:/app/frontend
     depends_on:
       - db
