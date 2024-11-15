@@ -133,7 +133,7 @@
                     const ul = document.createElement('ul');
                     data.forEach(item => {
                         const li = document.createElement('li');
-                        li.textContent = `ID: ${item.ProductID}, Name: ${item.name}, CurrentQuantity: ${item.quantity}, 
+                        li.textContent = `ProductID: ${item.ProductID}, Name: ${item.name}, CurrentQuantity: ${item.quantity}, 
                         MaximumQuantity: ${item.maxqt}, Location: ${item.location}, ${item.state}`;
                         ul.appendChild(li);
                     });
