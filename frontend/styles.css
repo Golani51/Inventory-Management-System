@@ -25,20 +25,46 @@ li{
 }
 
 table {
-    width: 100%;
     border-collapse: collapse;
-    margin: 20px 0;
+    width: 100%;
 }
 
-table, th, td {
-    border: 1px solid #ddd;
-}
-
-th, td{
-    padding: 8px;
+th, td {
+    border: 1px solid #ddddddb0;
     text-align: left;
+    padding: 8px;
 }
 
-th{
-    background-color: #f2f2f2;
+th {
+    background-color: #e5e5e5;
+}
+
+tr:hover {
+    background-color: #f1f1f1;
+}
+
+td[colspan="2"] {
+    background-color: #f9f9f9;
+    cursor: pointer;
+}
+
+/* Default button styles for stock status */
+.stock-button {
+    border: 1px solid black;
+    padding: 5px;
+    border-radius: 4px;
+    color: white;
+    font-size: 14px;
+    text-align: center;
+    cursor: pointer;
+}
+
+/* Specific styles for "Enough Stock" */
+.stock-button.enough {
+    background-color: gray;
+}
+
+/* Specific styles for "Low Stock" */
+.stock-button.low {
+    background-color: red;
 }

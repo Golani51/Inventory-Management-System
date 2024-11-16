@@ -3,7 +3,7 @@
 
 <head>
     <title>Inventory Management</title>
-    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="/styles.css">
 </head>
 
 <body>
@@ -28,18 +28,8 @@
         Loading inventory...
     </div>
 
-    <!-- Order Section (Visible to admin only) -->
+    <!-- Removed for future: Order Section (Visible to admin only) -->
     <div id="order_section" style="display: none;">
-        <h2>Create New Order</h2>
-        <form id="orderForm">
-            <label for="product_id">Product ID:</label>
-            <input type="number" id="product_id" name="product_id" required><br>
-            <label for="order_quantity">Quantity:</label>
-            <input type="number" id="order_quantity" name="order_quantity" required><br>
-            <button type="submit">Place Order</button>
-        </form>
-
-        <button id="resetOrderButton" style="display: none;">Reset Orders</button>
     </div>
 
     <script>
@@ -74,9 +64,8 @@
             // Inventory appears
             document.getElementById('inventory_list').style.display = 'block';
 
+            // When user role is admin do something
             if (data.role === 'admin') {
-                document.getElementById('order_section').style.display = 'block';
-                document.getElementById('resetOrderButton').style.display = 'inline';
             }
         }
 
@@ -119,63 +108,135 @@
             location.reload();  // Reload to reset the page
         });
 
-        // Function to fetch and display inventory
+        // Show an inventory list
         async function fetchInventory() {
             try {
+                // Check if Backend is connected
                 const response = await fetch('/Inventory');
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
                 const data = await response.json();
                 const inventoryDiv = document.getElementById('inventory_list');
                 inventoryDiv.innerHTML = '';
+                
+                // Grouping by ProductID
+                if (data.length > 0) {
+                    const groupedData = data.reduce((groups, item) => {
+                        if (!groups[item.ProductID]) {
+                            groups[item.ProductID] = {
+                                name: item.name,
+                                items: []
+                            };
+                        }
+                        groups[item.ProductID].items.push(item);
+                        return groups;
+                    }, {});
 
-                if(data.length > 0) {
+                    // Table Style
                     const table = document.createElement('table');
-                    const headerRow = document.createElement('tr');
+                    table.setAttribute('border', '1');
+                    table.style.width = '100%';
+                    table.style.borderCollapse = 'collapse';
 
-                    const headers = ['Product ID', 'Name', 'Current Quantity', 'Maximum Quantity', 'Location', 'State'];
-                    headers.forEach(headerText => {
-                        const th = document.createElement('th');
-                        th.textContent = headerText;
-                        headerRow.appendChild(th);
-                    
-                    });
+                    // Table Header
+                    const headerRow = document.createElement('tr');
+                    headerRow.innerHTML = `
+                        <th>Inventory List</th>
+                    `;
+
                     table.appendChild(headerRow);
 
-                    data.forEach(item=>{
-                        const row = document.createElement('tr');
+                    // Print inventory items per products
+                    for (const [productID, group] of Object.entries(groupedData)) {
                         
-                        const productIdCell = document.createElement('td');
-                        productIdCell.textContent = item.ProductID;
-                        row.appendChild(productIdCell);
+                        // Create collapsible row for each product
+                        const productRow = document.createElement('tr');
+                        productRow.innerHTML = `
+                            <td>
+                                <strong>Product ID: ${productID} - ${group.name}</strong>
+                            </td>
+                        `;
 
-                        const nameCell = document.createElement('td');
-                        nameCell.textContent = item.name;
-                        row.appendChild(nameCell);
+                        // Show dropdown menu when a product is clicked
+                        productRow.addEventListener('click', () => {
+                            const visibility = dropdownRow.style.display === 'none' ? 'table-row' : 'none';
+                            dropdownRow.style.display = visibility;
+                        });
 
-                        const quantityCell = document.createElement('td');
-                        quantityCell.textContent = item.quantity;
-                        row.appendChild(quantityCell);
+                        table.appendChild(productRow);
 
-                        const maxQuantityCell = document.createElement('td');
-                        maxQuantityCell.textContent = item.maxqt;
-                        row.appendChild(maxQuantityCell);
+                        // Dropdown rows for inventory items
+                        const dropdownRow = document.createElement('tr');
+                        dropdownRow.style.display = 'none';
+                        const dropdownCell = document.createElement('td');
+                        dropdownCell.setAttribute('colspan', '2');
+                        dropdownCell.style.padding = '0';
 
-                        const locationCell = document.createElement('td');
-                        locationCell.textContent = item.location;
-                        row.appendChild(locationCell);
+                        const dropdownTable = document.createElement('table');
+                        dropdownTable.style.width = '100%';
+                        dropdownTable.setAttribute('border', '1');
 
-                        const stateCell = document.createElement('td');
-                        stateCell.textContent = item.state;
-                        row.appendChild(stateCell);
+                        // Add header to the dropdown table
+                        const dropdownHeader = document.createElement('tr');
+                        dropdownHeader.innerHTML = `
+                            <th>Inventory ID</th>
+                            <th>Location</th>
+                            <th>State</th>
+                            <th>Current Quantity</th>
+                            <th>Max Quantity</th>
+                            <th>Adjustment</th>
+                            <th>Stock Status</th>
+                        `;
 
-                        table.appendChild(row);
+                        dropdownTable.appendChild(dropdownHeader);
+
+                        // Add inventory details
+                        group.items.forEach((item) => {
+                        const row = document.createElement('tr');
+                        row.setAttribute('data-threshold', item.thres); // Store threshold for adjustQuantity
+
+                        const stockButton = document.createElement('button');
+                        stockButton.classList.add('stock-button');
+
+                        // Calculate stock status
+                        if (1 - item.quantity / item.maxqt > item.thres) {
+                            stockButton.textContent = 'Low Stock';
+                            stockButton.classList.add('low');
+
+                        } else {
+                            stockButton.textContent = 'Enough Stock';
+                            stockButton.classList.add('enough');
+
+                        }
+
+                        // Dropdown contents
+                        row.innerHTML = `
+                            <td>${item.InventoryID}</td>
+                            <td>${item.location}</td>
+                            <td>${item.state}</td>
+                            <td id="quantity-${item.InventoryID}">${item.quantity}</td>
+                            <td>${item.maxqt}</td>
+                            <td>
+                                <input type="number" id="adjustment-${item.InventoryID}" value="1" style="width: 50px;">
+                                <button onclick="adjustQuantity(${item.InventoryID}, 'add')">+</button>
+                                <button onclick="adjustQuantity(${item.InventoryID}, 'subtract')">-</button>
+                            </td>
+                        `;
+
+                        const stockStatusCell = document.createElement('td');
+                        stockStatusCell.appendChild(stockButton);
+                        row.appendChild(stockStatusCell);
+                        dropdownTable.appendChild(row);
                     });
 
+                        dropdownCell.appendChild(dropdownTable);
+                        dropdownRow.appendChild(dropdownCell);
+                        table.appendChild(dropdownRow);
+                    }
                     inventoryDiv.appendChild(table);
 
                 } else {
-                    inventoryDiv.textContent = 'No inventory  items found.';
+                    inventoryDiv.textContent = 'No inventory items found.';
                 }
 
             } catch (error) {
@@ -184,50 +245,77 @@
             }
         }
 
-        // Order form submission handler
-        document.getElementById('orderForm').addEventListener('submit', async function(event) {
-            event.preventDefault();
-
-            const orderData = {
-                product_id: parseInt(document.getElementById('product_id').value),
-                quantity: parseInt(document.getElementById('order_quantity').value)
-            };
-
+        async function adjustQuantity(inventoryID, action) {
             try {
-                const response = await fetch('/Orders', {
+                // Get the adjustment value from the input field
+                const adjustmentInput = document.getElementById(`adjustment-${inventoryID}`);
+                const adjustmentValue = parseInt(adjustmentInput.value, 10);
+
+                if (isNaN(adjustmentValue) || adjustmentValue <= 0) {
+                    alert('Invalid adjustment value. Please enter a positive number.');
+                    return;
+                }
+
+                // Fetch current quantity and max quantity from the DOM
+                const currentQuantityCell = document.getElementById(`quantity-${inventoryID}`);
+                const currentQuantity = parseInt(currentQuantityCell.textContent, 10);
+                const currentRow = currentQuantityCell.parentElement;
+                const maxQuantity = parseInt(currentRow.children[4].textContent, 10);
+
+                // Determine the resulting quantity after adjustment
+                const resultingQuantity = action === 'add'
+                    ? currentQuantity + adjustmentValue
+                    : currentQuantity - adjustmentValue;
+
+                // Validate the resulting quantity
+                if (resultingQuantity < 0) {
+                    alert('Invalid operation. Quantity cannot be less than zero.');
+                    return;
+                }
+                
+                if (resultingQuantity > maxQuantity) {
+                    alert('Invalid operation. Quantity cannot exceed the maximum capacity.');
+                    return;
+                }
+
+                // Send the request to the backend
+                const adjustment = action === 'add' ? adjustmentValue : -adjustmentValue;
+                const response = await fetch('/update-quantity', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(orderData)
+                    body: JSON.stringify({ InventoryID: inventoryID, adjustment })
                 });
 
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                
-                alert('Order placed successfully!');
-                document.getElementById('orderForm').reset();
-                fetchInventory();
+                if (response.ok) {
+                    // Update the quantity in the DOM
+                    currentQuantityCell.textContent = resultingQuantity;
 
-            } catch (error) {
-                console.error('Error placing order:', error);
-                alert('Error placing order');
-            }
-        });
+                    // Fetch the threshold for stock status update
+                    const threshold = parseFloat(currentRow.getAttribute('data-threshold'));
+                    const stockStatusCell = currentRow.children[6]; // Stock Status cell index
+                    const stockButton = stockStatusCell.querySelector('button');
 
-        // Reset orders button handler
-        document.getElementById('resetOrderButton').addEventListener('click', async function() {
-            if (confirm('Are you sure you want to delete all orders and reset inventory quantities?')) {
-                try {
-                    const response = await fetch('/reset-orders', { method: 'DELETE' });
-                    if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+                    // Update the stock status
+                    if (1 - resultingQuantity / maxQuantity > threshold) {
+                        stockButton.textContent = 'Low Stock';
+                        stockButton.classList.remove('enough');
+                        stockButton.classList.add('low');
 
-                    alert('Orders reset successfully');
-                    fetchInventory();
-                    
-                } catch (error) {
-                    console.error('Error resetting orders:', error);
-                    alert('Error resetting orders');
+                    } else {
+                        stockButton.textContent = 'Enough Stock';
+                        stockButton.classList.remove('low');
+                        stockButton.classList.add('enough');
+                    }
+
+                } else {
+                    const error = await response.json();
+                    alert(`Error: ${error.error}`);
                 }
+            } catch (error) {
+                console.error('Error updating quantity:', error);
+                alert('Error updating quantity');
             }
-        });
+        }
 
         // Initialize page
         checkSession();
