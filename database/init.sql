@@ -37,7 +37,7 @@ CREATE TABLE `AuditLogs` (
   CONSTRAINT `auditlogs_ibfk_1` FOREIGN KEY (`ProductID`) REFERENCES `Products` (`ProductID`),
   CONSTRAINT `auditlogs_ibfk_2` FOREIGN KEY (`InventoryID`) REFERENCES `Inventory` (`InventoryID`),
   CONSTRAINT `auditlogs_ibfk_3` FOREIGN KEY (`EmployeeID`) REFERENCES `Employees` (`EmployeeID`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -123,10 +123,9 @@ CREATE TABLE `OrderDetails` (
   `OrderID` int NOT NULL,
   `ProductID` int NOT NULL,
   `Quantity` int DEFAULT NULL,
-  `UnitPrice` float DEFAULT NULL,
   `TotalAmount` float DEFAULT NULL,
   `InventoryID` int DEFAULT NULL,
-  PRIMARY KEY (`OrderID`,`ProductID`),
+  PRIMARY KEY (`OrderID`),
   KEY `ProductID` (`ProductID`),
   KEY `fk_inventory` (`InventoryID`),
   CONSTRAINT `fk_inventory` FOREIGN KEY (`InventoryID`) REFERENCES `Inventory` (`InventoryID`),
@@ -151,29 +150,6 @@ UNLOCK TABLES;
 /*!50003 SET collation_connection  = latin1_swedish_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `add_inventory_after_order` AFTER INSERT ON `orderdetails` FOR EACH ROW BEGIN
-    DECLARE current_stock INT;
-    DECLARE inventory_id INT;
-
-    -- Get the current stock level (CurrentQuantity) and InventoryID for the ordered product
-    SELECT CurrentQuantity, InventoryID
-    INTO current_stock, inventory_id
-    FROM Inventory
-    WHERE ProductID = NEW.ProductID;
-
-    -- Update the inventory quantity by adding the ordered amount
-    IF current_stock IS NOT NULL THEN
-        UPDATE Inventory
-        SET CurrentQuantity = current_stock + NEW.Quantity
-        WHERE ProductID = NEW.ProductID;
-    END IF;
-    
-    -- Log the transaction in AuditLogs with the correct InventoryID
-    INSERT INTO AuditLogs (ProductID, InventoryID, TransactionDate, TransactionType, QuantityChanged)
-    VALUES (NEW.ProductID, inventory_id, NOW(), 'Restock', NEW.Quantity);
-END */;;
-DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
@@ -193,7 +169,7 @@ CREATE TABLE `Orders` (
   PRIMARY KEY (`OrderID`),
   KEY `EmployeeID` (`EmployeeID`),
   CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`EmployeeID`) REFERENCES `Employees` (`EmployeeID`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --

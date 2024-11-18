@@ -61,7 +61,6 @@ def login():
             return jsonify({"error": "Invalid credentials"}), 401
         
     except Exception as e:
-        print("Login error:", e) 
         return jsonify({"error": "Internal Server Error"}), 500
 
 # Logout
@@ -73,46 +72,154 @@ def logout():
 # Route to get all inventory items
 @app.route('/Inventory', methods=['GET'])
 def get_inventory():
+    category = request.args.get('category')
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
-    cursor.execute("""
-        SELECT Inventory.InventoryID, Inventory.ProductID, Inventory.MaxCapacity as maxqt, 
-               Inventory.AssignedLocation as location, Inventory.LocationState as state, 
-               Inventory.CurrentQuantity as quantity, Inventory.Threshold as thres,
-               Products.ProductName as name
-        FROM Inventory
-        JOIN Products ON Inventory.ProductID = Products.ProductID;
-    """)
+    query = """
+                SELECT Inventory.InventoryID, Inventory.ProductID, Inventory.MaxCapacity as maxqt, 
+                    Inventory.AssignedLocation as location, Inventory.LocationState as state, 
+                    Inventory.CurrentQuantity as quantity, Inventory.Threshold as thres,
+                    Products.ProductName as name, Products.Category as category
+                FROM Inventory
+                JOIN Products ON Inventory.ProductID = Products.ProductID
+            """
+   
+    # Add category filter
+    if category:
+        query += " WHERE Products.Category = %s"
+        cursor.execute(query, (category,))
+    else:
+        cursor.execute(query)
+        
     results = cursor.fetchall()
     cursor.close()
     conn.close()
     return jsonify(results)
 
+# Handle quantity updates with input validations
 @app.route('/update-quantity', methods=['POST'])
 def update_quantity():
-    data = request.json
-    inventory_id = data.get('InventoryID')
-    adjustment = data.get('adjustment')
-
-    if not inventory_id or adjustment is None:
-        return jsonify({'error': 'Invalid input'}), 400
-
+    data = request.get_json()
+    inventory_id = data['InventoryID']
+    adjustment = data['adjustment']
+    employee_id = session['employee_id']
     try:
-        query = """
-        UPDATE Inventory
-        SET CurrentQuantity = GREATEST(CurrentQuantity + %s, 0)
-        WHERE InventoryID = %s;
-        """
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
-        cursor.execute(query, (adjustment, inventory_id))
-        conn.commit()
 
-        return jsonify({'message': 'Quantity updated successfully'}), 200
+        # Fetch inventory details
+        cursor.execute("SELECT * FROM Inventory WHERE InventoryID = %s", (inventory_id,))
+        inventory = cursor.fetchone()
+        if not inventory:
+            return jsonify({"error": "Inventory ID not found"}), 404
+
+        new_quantity = inventory['CurrentQuantity'] + adjustment
+
+        if new_quantity < 0 or (inventory['MaxCapacity'] is not None and new_quantity > inventory['MaxCapacity']):
+            return jsonify({"error": "Invalid quantity adjustment"}), 400
+
+        # Fetch UnitPrice from Products table
+        cursor.execute("SELECT UnitPrice FROM Products WHERE ProductID = %s", (inventory['ProductID'],))
+        product = cursor.fetchone()
+
+        if not product or product['UnitPrice'] is None:
+            return jsonify({"error": "Product's UnitPrice not found"}), 404
+
+        unit_price = product['UnitPrice']
+
+        # Update Inventory table
+        cursor.execute(
+            "UPDATE Inventory SET CurrentQuantity = %s WHERE InventoryID = %s",
+            (new_quantity, inventory_id)
+        )
+
+        if (adjustment > 0):
+            # Insert into Orders table
+            cursor.execute(
+                "INSERT INTO Orders (EmployeeID, OrderDate) VALUES (%s, %s)",
+                (employee_id, datetime.now())
+            )
+
+            order_id = cursor.lastrowid
+
+            # Insert into OrderDetails table
+            cursor.execute(
+                "INSERT INTO OrderDetails (OrderID, ProductID, Quantity, TotalAmount, InventoryID) "
+                "VALUES (%s, %s, %s, %s, %s)",
+                (
+                    order_id,
+                    inventory['ProductID'],
+                    abs(adjustment),
+                    unit_price * abs(adjustment),
+                    inventory_id
+                )
+            )
+
+        conn.commit()
+        return jsonify({"message": "Quantity updated successfully"}), 200
+
+    except Exception as e:
+        return jsonify({"error": "Quantity update was not successful"}), 500
+
+    finally:
+        cursor.close()
+        conn.close()
+
+# Get information from database for Order List
+@app.route('/Orders', methods=['GET'])
+def fetch_orders():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        # Query to join Orders, OrderDetails, and Products
+        query = """
+                    SELECT 
+                        o.OrderID,
+                        o.EmployeeID,
+                        e.FirstName,
+                        e.LastName,
+                        o.OrderDate,
+                        od.ProductID,
+                        od.Quantity,
+                        od.TotalAmount,
+                        od.InventoryID,
+                        p.UnitPrice,
+                        p.ProductName,
+                        i.AssignedLocation,
+                        i.LocationState
+                    FROM Orders o
+                    LEFT JOIN OrderDetails od ON o.OrderID = od.OrderID
+                    LEFT JOIN Products p ON od.ProductID = p.ProductID
+                    LEFT JOIN Employees e ON o.EmployeeID = e.EmployeeID
+                    LEFT JOIN Inventory i ON od.InventoryID = i.InventoryID;
+                """
+        
+        cursor.execute(query)
+        results = cursor.fetchall()
+        return jsonify(results), 200
     
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({"error": "Error fetching orders"}), 500
+    
+    finally:
+        conn.close()
 
+# List all the categories in Products table
+@app.route('/categories', methods=['GET'])
+def fetch_categories():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT DISTINCT Category FROM Products;")
+        results = cursor.fetchall()
+        return jsonify(results), 200
+    
+    except Exception as e:
+        return jsonify({"error": "Error fetching categories"}), 500
+    
+    finally:
+        conn.close()
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=4000)

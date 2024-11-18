@@ -2,325 +2,74 @@
 <html lang="en">
 
 <head>
-    <title>Inventory Management</title>
+    <title>INVENTORY MANAGEMENT</title>
     <link rel="stylesheet" href="/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital@0;1&display=swap" rel="stylesheet">
 </head>
 
 <body>
-    <h1>Inventory Management</h1>
+    <!-- Navigation Section -->
+    <nav class="navbar navbar-default navbar-fixed-top navbar-shrink">
+        <div class="container">
+            <div class="navbar-header">
+                <span class="navbar-brand">INVENTORY MANAGEMENT</span>
+                <div class="navbar-collapse">
+                    <ul class="navbar-right">
+                        <li><a href="javascript:void(0)" onclick="showSection('inventory_list')">Inventory</a></li>
+                        <li><a href="javascript:void(0)" onclick="showSection('orders_section')">Orders</a></li>
+                        <li><a href="javascript:void(0)" onclick="showSection('')">Chart</a></li>
+                        <li><a href="javascript:void(0)" onclick="showSection('')">AuditLogs</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
 
-    <!-- Login Section -->
-    <div id="login_section">
-        <h2>Login</h2>
-        <form id="loginForm">
-            <label for="username">Username:</label>
-            <input type="text" id="username" name="username" required><br>
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required><br>
-            <button type="submit">Login</button>
-        </form>
-        <button id="logoutButton" style="display: none;">Logout</button>
-        <p id="user_info" style="display: none;"></p>
+    <!-- Main Content Container -->
+    <div class="main-content">
+
+        <!-- Login Section -->
+        <div id="login_section">
+            <h2>Login</h2>
+            <form id="loginForm">
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" required><br>
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required><br>
+                <button type="submit">Login</button>
+            </form>
+            <button id="logoutButton" style="display: none;">Logout</button>
+            <p id="user_info" style="display: none;"></p>
+        </div>
+
+        <!-- Filter Section -->
+        <div id="inventory_filter" style="margin-bottom: 20px;">
+            <label for="viewMode">View Mode:</label>
+            <select id="viewMode" onchange="changeViewMode()">
+                <option value="product">Group by Product</option>
+                <option value="location">Group by Location</option>
+            </select>
+
+            <label for="categoryFilter">Filter by Category:</label>
+            <select id="categoryFilter" onchange="filterInventoryByCategory()">
+                <option value="">All Categories</option>
+            </select>
+        </div>
+        
+        <!-- Inventory List -->
+        <div id="inventory_list" style="display: none;">
+            Loading inventory...
+        </div>
+
+        <!-- Order List Section -->
+        <div id="orders_section" style="display: none;">
+            <h2>Orders</h2>
+            <div id="orders_table">Loading orders...</div>
+        </div>
     </div>
 
-    <!-- Inventory List (Visible when logged in successfully)-->
-    <div id="inventory_list" style="display: none;">
-        Loading inventory...
-    </div>
-
-    <!-- Removed for future: Order Section (Visible to admin only) -->
-    <div id="order_section" style="display: none;">
-    </div>
-
-    <script>
-        // Check session on page load to show/hide sections based on user role
-        async function checkSession() {
-            const response = await fetch('/check-session');
-            const inventoryDiv = document.getElementById('inventory_list');
-
-            if (response.ok) {
-                const data = await response.json();
-                showUserInfo(data);
-                fetchInventory();
-
-            } else {
-                // Hide inventory if user is not logged in
-                inventoryDiv.style.display = 'none';
-            }
-        }
-
-        // Display user info and controls based on role
-        function showUserInfo(data) {
-            // Log-in form disappears
-            document.getElementById('loginForm').style.display = 'none';
-
-            // Log-out button appears
-            document.getElementById('logoutButton').style.display = 'inline';
-
-            // User info appears
-            document.getElementById('user_info').style.display = 'block';
-            document.getElementById('user_info').textContent = `Logged in as ${data.username} (${data.role})`;
-            
-            // Inventory appears
-            document.getElementById('inventory_list').style.display = 'block';
-
-            // When user role is admin do something
-            if (data.role === 'admin') {
-            }
-        }
-
-        // Login form submission handler
-        document.getElementById('loginForm').addEventListener('submit', async function(event) {
-            event.preventDefault();
-
-            // Get username and password
-            const loginData = {
-                username: document.getElementById('username').value,
-                password: document.getElementById('password').value
-            };
-
-            try {
-                const response = await fetch('/login', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(loginData)
-                });
-
-                // If username and password are found in the database,
-                // show user info and inventory
-                if (response.ok) {
-                    const data = await response.json();
-                    showUserInfo(data);
-                    fetchInventory();
-
-                } else {
-                    alert('Login failed');
-                }
-
-            } catch (error) {
-                console.error('Error logging in:', error);
-            }
-        });
-
-        // Logout handler
-        document.getElementById('logoutButton').addEventListener('click', async function() {
-            await fetch('/logout');
-            location.reload();  // Reload to reset the page
-        });
-
-        // Show an inventory list
-        async function fetchInventory() {
-            try {
-                // Check if Backend is connected
-                const response = await fetch('/Inventory');
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-
-                const data = await response.json();
-                const inventoryDiv = document.getElementById('inventory_list');
-                inventoryDiv.innerHTML = '';
-                
-                // Grouping by ProductID
-                if (data.length > 0) {
-                    const groupedData = data.reduce((groups, item) => {
-                        if (!groups[item.ProductID]) {
-                            groups[item.ProductID] = {
-                                name: item.name,
-                                items: []
-                            };
-                        }
-                        groups[item.ProductID].items.push(item);
-                        return groups;
-                    }, {});
-
-                    // Table Style
-                    const table = document.createElement('table');
-                    table.setAttribute('border', '1');
-                    table.style.width = '100%';
-                    table.style.borderCollapse = 'collapse';
-
-                    // Table Header
-                    const headerRow = document.createElement('tr');
-                    headerRow.innerHTML = `
-                        <th>Inventory List</th>
-                    `;
-
-                    table.appendChild(headerRow);
-
-                    // Print inventory items per products
-                    for (const [productID, group] of Object.entries(groupedData)) {
-                        
-                        // Create collapsible row for each product
-                        const productRow = document.createElement('tr');
-                        productRow.innerHTML = `
-                            <td>
-                                <strong>Product ID: ${productID} - ${group.name}</strong>
-                            </td>
-                        `;
-
-                        // Show dropdown menu when a product is clicked
-                        productRow.addEventListener('click', () => {
-                            const visibility = dropdownRow.style.display === 'none' ? 'table-row' : 'none';
-                            dropdownRow.style.display = visibility;
-                        });
-
-                        table.appendChild(productRow);
-
-                        // Dropdown rows for inventory items
-                        const dropdownRow = document.createElement('tr');
-                        dropdownRow.style.display = 'none';
-                        const dropdownCell = document.createElement('td');
-                        dropdownCell.setAttribute('colspan', '2');
-                        dropdownCell.style.padding = '0';
-
-                        const dropdownTable = document.createElement('table');
-                        dropdownTable.style.width = '100%';
-                        dropdownTable.setAttribute('border', '1');
-
-                        // Add header to the dropdown table
-                        const dropdownHeader = document.createElement('tr');
-                        dropdownHeader.innerHTML = `
-                            <th>Inventory ID</th>
-                            <th>Location</th>
-                            <th>State</th>
-                            <th>Current Quantity</th>
-                            <th>Max Quantity</th>
-                            <th>Adjustment</th>
-                            <th>Stock Status</th>
-                        `;
-
-                        dropdownTable.appendChild(dropdownHeader);
-
-                        // Add inventory details
-                        group.items.forEach((item) => {
-                        const row = document.createElement('tr');
-                        row.setAttribute('data-threshold', item.thres); // Store threshold for adjustQuantity
-
-                        const stockButton = document.createElement('button');
-                        stockButton.classList.add('stock-button');
-
-                        // Calculate stock status
-                        if (1 - item.quantity / item.maxqt > item.thres) {
-                            stockButton.textContent = 'Low Stock';
-                            stockButton.classList.add('low');
-
-                        } else {
-                            stockButton.textContent = 'Enough Stock';
-                            stockButton.classList.add('enough');
-
-                        }
-
-                        // Dropdown contents
-                        row.innerHTML = `
-                            <td>${item.InventoryID}</td>
-                            <td>${item.location}</td>
-                            <td>${item.state}</td>
-                            <td id="quantity-${item.InventoryID}">${item.quantity}</td>
-                            <td>${item.maxqt}</td>
-                            <td>
-                                <input type="number" id="adjustment-${item.InventoryID}" value="1" style="width: 50px;">
-                                <button onclick="adjustQuantity(${item.InventoryID}, 'add')">+</button>
-                                <button onclick="adjustQuantity(${item.InventoryID}, 'subtract')">-</button>
-                            </td>
-                        `;
-
-                        const stockStatusCell = document.createElement('td');
-                        stockStatusCell.appendChild(stockButton);
-                        row.appendChild(stockStatusCell);
-                        dropdownTable.appendChild(row);
-                    });
-
-                        dropdownCell.appendChild(dropdownTable);
-                        dropdownRow.appendChild(dropdownCell);
-                        table.appendChild(dropdownRow);
-                    }
-                    inventoryDiv.appendChild(table);
-
-                } else {
-                    inventoryDiv.textContent = 'No inventory items found.';
-                }
-
-            } catch (error) {
-                console.error('Error fetching inventory:', error);
-                document.getElementById('inventory_list').textContent = 'Error loading inventory';
-            }
-        }
-
-        async function adjustQuantity(inventoryID, action) {
-            try {
-                // Get the adjustment value from the input field
-                const adjustmentInput = document.getElementById(`adjustment-${inventoryID}`);
-                const adjustmentValue = parseInt(adjustmentInput.value, 10);
-
-                if (isNaN(adjustmentValue) || adjustmentValue <= 0) {
-                    alert('Invalid adjustment value. Please enter a positive number.');
-                    return;
-                }
-
-                // Fetch current quantity and max quantity from the DOM
-                const currentQuantityCell = document.getElementById(`quantity-${inventoryID}`);
-                const currentQuantity = parseInt(currentQuantityCell.textContent, 10);
-                const currentRow = currentQuantityCell.parentElement;
-                const maxQuantity = parseInt(currentRow.children[4].textContent, 10);
-
-                // Determine the resulting quantity after adjustment
-                const resultingQuantity = action === 'add'
-                    ? currentQuantity + adjustmentValue
-                    : currentQuantity - adjustmentValue;
-
-                // Validate the resulting quantity
-                if (resultingQuantity < 0) {
-                    alert('Invalid operation. Quantity cannot be less than zero.');
-                    return;
-                }
-                
-                if (resultingQuantity > maxQuantity) {
-                    alert('Invalid operation. Quantity cannot exceed the maximum capacity.');
-                    return;
-                }
-
-                // Send the request to the backend
-                const adjustment = action === 'add' ? adjustmentValue : -adjustmentValue;
-                const response = await fetch('/update-quantity', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ InventoryID: inventoryID, adjustment })
-                });
-
-                if (response.ok) {
-                    // Update the quantity in the DOM
-                    currentQuantityCell.textContent = resultingQuantity;
-
-                    // Fetch the threshold for stock status update
-                    const threshold = parseFloat(currentRow.getAttribute('data-threshold'));
-                    const stockStatusCell = currentRow.children[6]; // Stock Status cell index
-                    const stockButton = stockStatusCell.querySelector('button');
-
-                    // Update the stock status
-                    if (1 - resultingQuantity / maxQuantity > threshold) {
-                        stockButton.textContent = 'Low Stock';
-                        stockButton.classList.remove('enough');
-                        stockButton.classList.add('low');
-
-                    } else {
-                        stockButton.textContent = 'Enough Stock';
-                        stockButton.classList.remove('low');
-                        stockButton.classList.add('enough');
-                    }
-
-                } else {
-                    const error = await response.json();
-                    alert(`Error: ${error.error}`);
-                }
-            } catch (error) {
-                console.error('Error updating quantity:', error);
-                alert('Error updating quantity');
-            }
-        }
-
-        // Initialize page
-        checkSession();
-        fetchInventory();
-
-    </script>
+    <script src="/script.js"></script>
 </body>
 </html>
