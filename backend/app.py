@@ -5,14 +5,17 @@ import mysql.connector
 from datetime import datetime
 
 
-app = Flask(__name__, static_folder='frontend') # Configure html and css file
+app = Flask(__name__, static_folder='frontend', template_folder='frontend')
 bcrypt = Bcrypt(app) # To match encrypted password with stored hash password
 app.secret_key = os.environ.get('SECRET_KEY', 'default_secret_key') # Need for session
 
-# Serve the index.html file at the root URL
 @app.route('/')
 def serve_index():
-    return send_from_directory(app.static_folder, 'index.html')
+    return send_from_directory('frontend', 'index.html')
+
+@app.route('/<path:filename>')
+def serve_static(filename):
+    return send_from_directory('frontend', filename)
 
 # Create a database connection
 def get_db_connection():
@@ -58,7 +61,6 @@ def login():
             return jsonify({"error": "Invalid credentials"}), 401
         
     except Exception as e:
-        print("Login error:", e) 
         return jsonify({"error": "Internal Server Error"}), 500
 
 # Logout
@@ -70,90 +72,154 @@ def logout():
 # Route to get all inventory items
 @app.route('/Inventory', methods=['GET'])
 def get_inventory():
-    connection = get_db_connection()
-    cursor = connection.cursor(dictionary = True)
-    cursor.execute("""
-        SELECT Inventory.InventoryID, Inventory.ProductID, Inventory.MaxCapacity as maxqt, 
-               Inventory.AssignedLocation as location, Inventory.LocationState as state, 
-               Inventory.CurrentQuantity as quantity, Products.ProductName as name
-        FROM Inventory
-        JOIN Products ON Inventory.ProductID = Products.ProductID;
-    """)
+    category = request.args.get('category')
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    query = """
+                SELECT Inventory.InventoryID, Inventory.ProductID, Inventory.MaxCapacity as maxqt, 
+                    Inventory.AssignedLocation as location, Inventory.LocationState as state, 
+                    Inventory.CurrentQuantity as quantity, Inventory.Threshold as thres,
+                    Products.ProductName as name, Products.Category as category
+                FROM Inventory
+                JOIN Products ON Inventory.ProductID = Products.ProductID
+            """
+   
+    # Add category filter
+    if category:
+        query += " WHERE Products.Category = %s"
+        cursor.execute(query, (category,))
+    else:
+        cursor.execute(query)
+        
     results = cursor.fetchall()
     cursor.close()
-    connection.close()
+    conn.close()
     return jsonify(results)
 
-# Create a new order
-@app.route('/Orders', methods=['POST'])
-def create_order():
-
-    # Only allow admin can submit an order
-    if not session['employee_id']:
-        return {'error': 'Login required'}, 401
-    
-    if session['role'] != 'admin':
-        return {'error': 'Unauthorized'}, 403
-
-    data = request.json
-    product_id = data['product_id']
-    quantity = data['quantity']
-    created_by = session['employee_id']
-
+# Handle quantity updates with input validations
+@app.route('/update-quantity', methods=['POST'])
+def update_quantity():
+    data = request.get_json()
+    inventory_id = data['InventoryID']
+    adjustment = data['adjustment']
+    employee_id = session['employee_id']
     try:
         conn = get_db_connection()
-        cursor = conn.cursor()
+        cursor = conn.cursor(dictionary=True)
 
-        # Insert into Orders table
-        cursor.execute("INSERT INTO Orders (OrderDate, EmployeeID) VALUES (%s, %s)", (datetime.now(), created_by))
-        order_id = cursor.lastrowid
+        # Fetch inventory details
+        cursor.execute("SELECT * FROM Inventory WHERE InventoryID = %s", (inventory_id,))
+        inventory = cursor.fetchone()
+        if not inventory:
+            return jsonify({"error": "Inventory ID not found"}), 404
 
-        # Insert into OrderDetails table
+        new_quantity = inventory['CurrentQuantity'] + adjustment
+
+        if new_quantity < 0 or (inventory['MaxCapacity'] is not None and new_quantity > inventory['MaxCapacity']):
+            return jsonify({"error": "Invalid quantity adjustment"}), 400
+
+        # Fetch UnitPrice from Products table
+        cursor.execute("SELECT UnitPrice FROM Products WHERE ProductID = %s", (inventory['ProductID'],))
+        product = cursor.fetchone()
+
+        if not product or product['UnitPrice'] is None:
+            return jsonify({"error": "Product's UnitPrice not found"}), 404
+
+        unit_price = product['UnitPrice']
+
+        # Update Inventory table
         cursor.execute(
-            "INSERT INTO OrderDetails (OrderID, ProductID, Quantity) VALUES (%s, %s, %s)",
-            (order_id, product_id, quantity)
+            "UPDATE Inventory SET CurrentQuantity = %s WHERE InventoryID = %s",
+            (new_quantity, inventory_id)
         )
 
+        if (adjustment > 0):
+            # Insert into Orders table
+            cursor.execute(
+                "INSERT INTO Orders (EmployeeID, OrderDate) VALUES (%s, %s)",
+                (employee_id, datetime.now())
+            )
+
+            order_id = cursor.lastrowid
+
+            # Insert into OrderDetails table
+            cursor.execute(
+                "INSERT INTO OrderDetails (OrderID, ProductID, Quantity, TotalAmount, InventoryID) "
+                "VALUES (%s, %s, %s, %s, %s)",
+                (
+                    order_id,
+                    inventory['ProductID'],
+                    abs(adjustment),
+                    unit_price * abs(adjustment),
+                    inventory_id
+                )
+            )
+
         conn.commit()
+        return jsonify({"message": "Quantity updated successfully"}), 200
+
+    except Exception as e:
+        return jsonify({"error": "Quantity update was not successful"}), 500
+
+    finally:
         cursor.close()
         conn.close()
-        return jsonify({"message": "Order created successfully"}), 200
+
+# Get information from database for Order List
+@app.route('/Orders', methods=['GET'])
+def fetch_orders():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        # Query to join Orders, OrderDetails, and Products
+        query = """
+                    SELECT 
+                        o.OrderID,
+                        o.EmployeeID,
+                        e.FirstName,
+                        e.LastName,
+                        o.OrderDate,
+                        od.ProductID,
+                        od.Quantity,
+                        od.TotalAmount,
+                        od.InventoryID,
+                        p.UnitPrice,
+                        p.ProductName,
+                        i.AssignedLocation,
+                        i.LocationState
+                    FROM Orders o
+                    LEFT JOIN OrderDetails od ON o.OrderID = od.OrderID
+                    LEFT JOIN Products p ON od.ProductID = p.ProductID
+                    LEFT JOIN Employees e ON o.EmployeeID = e.EmployeeID
+                    LEFT JOIN Inventory i ON od.InventoryID = i.InventoryID;
+                """
+        
+        cursor.execute(query)
+        results = cursor.fetchall()
+        return jsonify(results), 200
     
     except Exception as e:
-        print("Error creating order:", e)
-        return jsonify({"error": "Error creating order"}), 500
+        return jsonify({"error": "Error fetching orders"}), 500
+    
+    finally:
+        conn.close()
 
-# Reset orders and order details and clear the inventory
-@app.route('/reset-orders', methods=['DELETE'])
-def reset_orders():
+# List all the categories in Products table
+@app.route('/categories', methods=['GET'])
+def fetch_categories():
     try:
-        connection = get_db_connection()
-        cursor = connection.cursor()
-
-        # Update Inventory by reversing OrderDetails quantities
-        cursor.execute("""
-            UPDATE Inventory
-            JOIN (
-                SELECT ProductID, SUM(Quantity) AS totalQuantity
-                FROM OrderDetails
-                GROUP BY ProductID
-            ) AS aggregatedOrders ON Inventory.ProductID = aggregatedOrders.ProductID
-            SET Inventory.CurrentQuantity = Inventory.CurrentQuantity - aggregatedOrders.totalQuantity
-        """)
-
-        # Delete from OrderDetails, Orders, and AuditLogs
-        cursor.execute("DELETE FROM AuditLogs")
-        cursor.execute("DELETE FROM OrderDetails")
-        cursor.execute("DELETE FROM Orders")
-
-        connection.commit()
-        cursor.close()
-        connection.close()
-        return jsonify({"message": "Orders, OrderDetails, and AuditLogs reset successfully, and inventory quantities restored."}), 200
-   
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT DISTINCT Category FROM Products;")
+        results = cursor.fetchall()
+        return jsonify(results), 200
+    
     except Exception as e:
-        print("Error resetting orders:", e)
-        return jsonify({"error": "Error resetting orders"}), 500
+        return jsonify({"error": "Error fetching categories"}), 500
+    
+    finally:
+        conn.close()
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=4000)
