@@ -220,6 +220,7 @@ def fetch_categories():
     
     finally:
         conn.close()
+        
 # Endpoint to fetch order data for Google Chart
 @app.route('/chart-data', methods=['GET'])
 def fetch_chart_data():

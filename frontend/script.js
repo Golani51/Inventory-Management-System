@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // Check current website page (section) to toggle inventory filters and order list
 function showSection(sectionId) {
     // Hide all sections
-    const sections = document.querySelectorAll('#inventory_list, #orders_section');
+    const sections = document.querySelectorAll('#inventory_list, #orders_section, #chart_section');
     sections.forEach(section => section.style.display = 'none');
 
     // Hide the category filter by default
@@ -25,8 +25,8 @@ function showSection(sectionId) {
         else if (sectionId === 'orders_section') {
             fetchOrders();
         }
-        else if (sectionId === 'google_chart'){
-            loadAndRenderGoogleChart();
+        else if (sectionId === 'chart_section'){
+            chartBuilder();
         }
     }
 }
@@ -43,6 +43,7 @@ async function checkSession() {
         fetchCategories(); // Fetch categories for the dropdown
         fetchInventory();  // Fetch inventory after login
         inventoryFilter.style.display = 'block';
+
     } else {
         // Hide inventory if user is not logged in
         inventoryDiv.style.display = 'none';
@@ -532,76 +533,71 @@ async function filterInventoryByCategory() {
     const category = document.getElementById('categoryFilter').value;
     fetchInventory(category); 
 }
-function loadAndRenderGoogleChart() {
+
+// Initialize Google Chart
+function chartBuilder() {
     // Load the Google Charts library
     google.charts.load('current', { packages: ['corechart'] });
 
-    // Set a callback to draw the chart after the library is loaded
-    google.charts.setOnLoadCallback(async () => {
-        try {
-            // Fetch the data for the chart
-            const chartData = await fetchOrderDataForChart();
+    // Callback to draw the chart after the library is loaded
+    google.charts.setOnLoadCallback(drawOrderChart);
 
-            // Convert the fetched data into a format Google Charts can use
-            const data = google.visualization.arrayToDataTable(chartData);
+    drawOrderChart();
+}
 
-            // Define chart options
-            const options = {
-                title: 'Orders by Employees',
-                width: 800,
-                height: 600,
-                hAxis: { title: 'Employees' },
-                vAxis: { title: 'Quantity Ordered' },
-                legend: { position: 'none' },
-            };
+// Helper function for chartBuilder function
+function drawOrderChart() {
+  // Fetch data from the /Orders API endpoint
+  fetch('/Orders')
+    .then(response => response.json())
+    .then(data => {
 
-            // Render the chart in the specified HTML element
-            const chart = new google.visualization.ColumnChart(
-                document.getElementById('order-chart')
-            );
-            chart.draw(data, options);
-        } catch (error) {
-            console.error('Error loading chart data:', error);
-            document.getElementById('order-chart').innerHTML =
-                'Error loading chart. Please try again.';
+      if (!data || !data.length) {
+        document.getElementById('google_chart').innerText = 'No data available for chart';
+        return;
+      }
+
+      // Transform the fetched data into a format suitable for Google Charts
+      const chartData = [['Employee', 'Quantity']]; // Header row
+      const aggregatedData = {};
+
+      // Aggregate the data by employee
+      data.forEach(order => {
+        const employeeName = `${order.FirstName} ${order.LastName}`;
+        if (!aggregatedData[employeeName]) {
+            aggregatedData[employeeName] = 0;
         }
+        aggregatedData[employeeName] += order.Quantity;
+      });
+
+      // Populate the chart data array
+      for (const [employee, quantity] of Object.entries(aggregatedData)) {
+        chartData.push([employee, quantity]);
+      }
+
+      // Create a DataTable for the chart
+      const dataTable = google.visualization.arrayToDataTable(chartData);
+
+      // Define chart options
+      const options = {
+        title: 'Orders by Employees',
+        width: 800,
+        height: 600,
+        legend: { position: 'none' },
+        hAxis: { title: 'Employees' },
+        vAxis: { title: 'Quantity Ordered' }
+      };
+
+      // Draw the chart
+      const chart = new google.visualization.ColumnChart(document.getElementById('google_chart'));
+      chart.draw(dataTable, options);
+    })
+    .catch(error => {
+      console.error('Error fetching order data:', error);
+      document.getElementById('google_chart').innerText = 'Error loading chart';
     });
 }
 
-// Helper function to fetch data for the chart
-async function fetchOrderDataForChart() {
-    try {
-        // Make a GET request to your backend API to fetch order data
-        const response = await fetch('/Orders');
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const orders = await response.json();
-
-        // Transform the order data into a format suitable for Google Charts
-        const chartData = [['Employee', 'Total Orders']];
-
-        const employeeOrderMap = {};
-        orders.forEach(order => {
-            const employeeName = `${order.FirstName} ${order.LastName}`;
-            if (!employeeOrderMap[employeeName]) {
-                employeeOrderMap[employeeName] = 0;
-            }
-            employeeOrderMap[employeeName] += order.Quantity;
-        });
-
-        for (const [employee, total] of Object.entries(employeeOrderMap)) {
-            chartData.push([employee, total]);
-        }
-
-        return chartData;
-    } catch (error) {
-        console.error('Error fetching order data:', error);
-        return [['Error', 0]];
-    }
-    
-}
 // Initialize page
 checkSession();
 let currentViewMode = 'product'; 
