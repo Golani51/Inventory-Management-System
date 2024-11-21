@@ -220,6 +220,47 @@ def fetch_categories():
     
     finally:
         conn.close()
+# Endpoint to fetch order data for Google Chart
+@app.route('/chart-data', methods=['GET'])
+def fetch_chart_data():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        # Query to get aggregated order data
+        query = """
+            SELECT 
+                e.FirstName, 
+                e.LastName, 
+                p.ProductName, 
+                SUM(od.Quantity) AS TotalQuantity
+            FROM Orders o
+            LEFT JOIN OrderDetails od ON o.OrderID = od.OrderID
+            LEFT JOIN Products p ON od.ProductID = p.ProductID
+            LEFT JOIN Employees e ON o.EmployeeID = e.EmployeeID
+            GROUP BY e.EmployeeID, p.ProductName
+            ORDER BY e.FirstName, e.LastName, p.ProductName;
+        """
+        cursor.execute(query)
+        results = cursor.fetchall()
+
+        # Transform data for Google Charts (as a list of lists)
+        chart_data = [["Employee", "Product", "Total Quantity"]]
+        for row in results:
+            chart_data.append([
+                f"{row['FirstName']} {row['LastName']}", 
+                row['ProductName'], 
+                row['TotalQuantity']
+            ])
+
+        return jsonify(chart_data), 200
+
+    except Exception as e:
+        print("Error fetching chart data:", e)
+        return jsonify({"error": "Error fetching chart data"}), 500
+
+    finally:
+        conn.close()
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=4000)

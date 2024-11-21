@@ -7,6 +7,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital@0;1&display=swap" rel="stylesheet">
+    <!--Add the Google Charts library to the <head> section of your HTML:-->
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 </head>
 
 <body>
@@ -19,7 +21,7 @@
                     <ul class="navbar-right">
                         <li><a href="javascript:void(0)" onclick="showSection('inventory_list')">Inventory</a></li>
                         <li><a href="javascript:void(0)" onclick="showSection('orders_section')">Orders</a></li>
-                        <li><a href="javascript:void(0)" onclick="showSection('')">Chart</a></li>
+                        <li><a href="javascript:void(0)" onclick="showSection('google_chart')">Chart</a></li>
                         <li><a href="javascript:void(0)" onclick="showSection('')">AuditLogs</a></li>
                     </ul>
                 </div>
@@ -68,6 +70,10 @@
             <h2>Orders</h2>
             <div id="orders_table">Loading orders...</div>
         </div>
+        <div id="orders_section" style="display: none;"></div>
+        <!--#In your frontend/index.html, add a div where the chart will be displayed:-->
+        <!--TODO put style in style.css-->
+        <div id="order-chart" style="display: none;width: 800px; height: 600px;"></div>
     </div>
 
     <script src="/script.js"></script>
