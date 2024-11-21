@@ -4,6 +4,13 @@ document.addEventListener('DOMContentLoaded', () => {
     checkSession();
 });
 
+document.getElementById('searchProductId').addEventListener('keypress', function (event) {
+    if (event.key === 'Enter') {
+        event.preventDefault(); // Prevent form submission if inside a form
+        searchByProductId(); // Call the search function
+    }
+});
+
 // Check current website page (section) to toggle inventory filters and order list
 function showSection(sectionId) {
     // Hide all sections
@@ -21,6 +28,19 @@ function showSection(sectionId) {
         // Show category filter only for inventory
         if (sectionId === 'inventory_list') {
             document.getElementById('inventory_filter').style.display = 'block';
+
+            activeFilters = { category: null, productId: null }; // Reset filters
+
+            // Update UI elements
+            document.getElementById('viewMode').value = 'product'; // Reset view mode dropdown
+            document.getElementById('categoryFilter').value = ''; // Reset category dropdown
+            document.getElementById('searchProductId').value = ''; // Clear ProductID input
+
+            // Clear filter boxes
+            renderActiveFilters();
+
+            // Reload inventory with default settings
+            fetchFilteredInventory();
         }
         else if (sectionId === 'orders_section') {
             fetchOrders();
@@ -57,7 +77,8 @@ function showUserInfo(data) {
 
     // User info appears
     document.getElementById('user_info').style.display = 'block';
-    document.getElementById('user_info').textContent = `Logged in as ${data.username} (${data.role})`;
+
+    document.getElementById('user_info').textContent = `Hello! ${data.firstname} Logged in as ${data.username} (${data.role})`;
     
     // Inventory appears
     document.getElementById('inventory_list').style.display = 'block';
@@ -520,17 +541,144 @@ async function fetchCategories() {
 
 // View mode change handler
 function changeViewMode() {
-    currentViewMode = document.getElementById('viewMode').value;
-    fetchInventory();
+    const category = document.getElementById('categoryFilter').value; // Get the current category filter
+    const productId = document.getElementById('searchProductId').value.trim(); // Get the current ProductID filter
+    currentViewMode = document.getElementById('viewMode').value; // Update the view mode
+    fetchFilteredInventory(category, productId); // Fetch inventory based on filters
 }
 
-// Category filter handler
+async function fetchFilteredInventory() {
+    const category = activeFilters.category || ''; // Get active category
+    const productId = activeFilters.productId || ''; // Get active ProductID
+
+    try {
+        const response = await fetch(`/Inventory?category=${encodeURIComponent(category)}&productId=${encodeURIComponent(productId)}`);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+        const data = await response.json();
+        const inventoryDiv = document.getElementById('inventory_list');
+        inventoryDiv.innerHTML = '';
+
+        if (data.length > 0) {
+            if (currentViewMode === 'product') {
+                renderGroupedByProduct(data, inventoryDiv);
+            } else if (currentViewMode === 'location') {
+                renderGroupedByLocation(data, inventoryDiv);
+            }
+        } else {
+            inventoryDiv.textContent = 'No inventory items found for the given filters.';
+        }
+    } catch (error) {
+        alert('Error loading inventory');
+        console.error(error);
+    }
+}
+
 async function filterInventoryByCategory() {
-    const category = document.getElementById('categoryFilter').value;
-    fetchInventory(category); 
+    const category = document.getElementById('categoryFilter').value; // Get selected category
+    activeFilters.category = category || null; // Update active filters
+    fetchFilteredInventory(); // Reload inventory
+    renderActiveFilters(); // Update filter boxes
+}
+
+async function searchByProductId() {
+    const productId = document.getElementById('searchProductId').value.trim();
+    if (!productId) {
+        alert('Please enter a ProductID to search.');
+        return;
+    }
+
+    activeFilters.productId = productId; // Update active filters
+    fetchFilteredInventory(); // Reload inventory
+    renderActiveFilters(); // Update filter boxes
+}
+
+function renderActiveFilters() {
+    const filterContainer = document.getElementById('activeFilters');
+    filterContainer.innerHTML = ''; // Clear existing filters
+
+    // Add a filter box for category if it's active
+    if (activeFilters.category) {
+        const categoryFilter = createFilterBox('Category', activeFilters.category, () => {
+            activeFilters.category = null; // Remove category filter
+            document.getElementById('categoryFilter').value = ''; // Reset dropdown
+            fetchFilteredInventory(); // Reload inventory
+        });
+        filterContainer.appendChild(categoryFilter);
+    }
+
+    // Add a filter box for ProductID if it's active
+    if (activeFilters.productId) {
+        const productIdFilter = createFilterBox('ProductID', activeFilters.productId, () => {
+            activeFilters.productId = null; // Remove ProductID filter
+            document.getElementById('searchProductId').value = ''; // Clear input
+            fetchFilteredInventory(); // Reload inventory
+        });
+        filterContainer.appendChild(productIdFilter);
+    }
+}
+
+function createFilterBox(label, value, onRemove) {
+    const filterBox = document.createElement('div');
+    filterBox.style.display = 'flex';
+    filterBox.style.alignItems = 'center';
+    filterBox.style.border = '1px solid #ccc';
+    filterBox.style.borderRadius = '5px';
+    filterBox.style.padding = '5px';
+    filterBox.style.backgroundColor = '#f8f8f8';
+
+    const filterLabel = document.createElement('span');
+    filterLabel.textContent = `${label}: ${value}`;
+    filterLabel.style.marginRight = '10px';
+
+    const removeButton = document.createElement('button');
+    removeButton.textContent = 'x';
+    removeButton.style.border = 'none';
+    removeButton.style.background = 'transparent';
+    removeButton.style.cursor = 'pointer';
+    removeButton.addEventListener('click', () => {
+        onRemove(); // Call the removal callback
+        renderActiveFilters(); // Update filter boxes
+    });
+
+    filterBox.appendChild(filterLabel);
+    filterBox.appendChild(removeButton);
+
+    return filterBox;
+}
+
+function toggleModal(modalId, button = null) {
+    const modal = document.getElementById(modalId);
+
+    if (modal.style.display === "block") {
+        closeModal(modalId); // Close the modal
+    } else {
+        if (button) {
+            positionModal(modal, button); // Position the modal below the button
+        }
+        modal.style.display = "block"; // Show the modal
+        window.addEventListener("resize", () => positionModal(modal, button)); // Update position on resize
+    }
+}
+
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    modal.style.display = "none"; // Hide the modal
+    window.removeEventListener("resize", updateModalPosition); // Remove resize listener
+}
+
+function positionModal(modal, button) {
+    const rect = button.getBoundingClientRect();
+    modal.style.position = "absolute";
+    modal.querySelector(".modal-content").style.top = `${rect.bottom + window.scrollY}px`; // Adjust vertically
+    modal.querySelector(".modal-content").style.left = `${rect.left + window.scrollX- 230}px`; // Adjust horizontally
 }
 
 // Initialize page
 checkSession();
 let currentViewMode = 'product'; 
 fetchInventory();
+let activeFilters = {
+    category: null,
+    productId: null
+};

@@ -30,7 +30,7 @@ def get_db_connection():
 @app.route('/check-session')
 def check_session():
     if 'employee_id' in session:
-        return jsonify({"username": session['username'], "role": session['role']}), 200
+        return jsonify({"username": session['username'], "role": session['role'], "firstname": session['firstname'], "lastname": session['lastname']}), 200
     
     else:
         return jsonify({"error": "Not logged in"}), 401
@@ -55,7 +55,10 @@ def login():
             session['employee_id'] = user['EmployeeID']
             session['role'] = user['Role']
             session['username'] = user['Username']
-            return jsonify({"username": user['Username'], "role": user['Role']}), 200
+            session['firstname'] = user['FirstName'] 
+            session['lastname'] = user['LastName']
+
+            return jsonify({"username": session['username'], "role": session['role'], "firstname": session['firstname'], "lastname": session['lastname']}), 200
         
         else:
             return jsonify({"error": "Invalid credentials"}), 401
@@ -73,8 +76,11 @@ def logout():
 @app.route('/Inventory', methods=['GET'])
 def get_inventory():
     category = request.args.get('category')
+    product_id = request.args.get('productId')  # Get the ProductID parameter
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
+    
+    # Base query
     query = """
                 SELECT Inventory.InventoryID, Inventory.ProductID, Inventory.MaxCapacity as maxqt, 
                     Inventory.AssignedLocation as location, Inventory.LocationState as state, 
@@ -83,18 +89,32 @@ def get_inventory():
                 FROM Inventory
                 JOIN Products ON Inventory.ProductID = Products.ProductID
             """
-   
+    
+    filters = []
+    params = []
+    
     # Add category filter
     if category:
-        query += " WHERE Products.Category = %s"
-        cursor.execute(query, (category,))
-    else:
-        cursor.execute(query)
-        
+        filters.append("Products.Category = %s")
+        params.append(category)
+    
+    # Add ProductID filter
+    if product_id:
+        filters.append("Products.ProductID = %s")
+        params.append(product_id)
+    
+    # Append filters to the query
+    if filters:
+        query += " WHERE " + " AND ".join(filters)
+    
+    # Execute the query with parameters
+    cursor.execute(query, params)
+    
     results = cursor.fetchall()
     cursor.close()
     conn.close()
     return jsonify(results)
+
 
 # Handle quantity updates with input validations
 @app.route('/update-quantity', methods=['POST'])

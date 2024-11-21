@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital@0;1&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
 </head>
 
 <body>
@@ -15,13 +16,19 @@
         <div class="container">
             <div class="navbar-header">
                 <span class="navbar-brand">INVENTORY MANAGEMENT</span>
-                <div class="navbar-collapse">
-                    <ul class="navbar-right">
-                        <li><a href="javascript:void(0)" onclick="showSection('inventory_list')">Inventory</a></li>
-                        <li><a href="javascript:void(0)" onclick="showSection('orders_section')">Orders</a></li>
-                        <li><a href="javascript:void(0)" onclick="showSection('')">Chart</a></li>
-                        <li><a href="javascript:void(0)" onclick="showSection('')">AuditLogs</a></li>
-                    </ul>
+                <ul class="navbar-menu">
+                    <li><a href="javascript:void(0)" onclick="showSection('inventory_list')">Inventory</a></li>
+                    <li><a href="javascript:void(0)" onclick="showSection('orders_section')">Orders</a></li>
+                    <li><a href="javascript:void(0)" onclick="showSection('')">Chart</a></li>
+                    <li><a href="javascript:void(0)" onclick="showSection('')">AuditLogs</a></li>
+                </ul>
+                <div class="navbar-right">
+                    <button class="icon-button" onclick="toggleModal('notificationsModal', this)">
+                        <span class="material-symbols-outlined">notifications</span>
+                    </button>
+                    <button class="icon-button" onclick="toggleModal('accountModal', this)">
+                        <span class="material-symbols-outlined">account_circle</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -32,7 +39,6 @@
 
         <!-- Login Section -->
         <div id="login_section">
-            <h2>Login</h2>
             <form id="loginForm">
                 <label for="username">Username:</label>
                 <input type="text" id="username" name="username" required><br>
@@ -40,8 +46,6 @@
                 <input type="password" id="password" name="password" required><br>
                 <button type="submit">Login</button>
             </form>
-            <button id="logoutButton" style="display: none;">Logout</button>
-            <p id="user_info" style="display: none;"></p>
         </div>
 
         <!-- Filter Section -->
@@ -56,6 +60,14 @@
             <select id="categoryFilter" onchange="filterInventoryByCategory()">
                 <option value="">All Categories</option>
             </select>
+
+            <label for="searchProductId">Search by ProductID:</label>
+            <input type="text" id="searchProductId" placeholder="Enter ProductID">
+            <button id = "searchIdButton" onclick="searchByProductId()">Search</button>
+
+            <div id="activeFilters" style="margin-top: 10px; display: flex; gap: 5px;">
+                <!-- Active filters will be dynamically displayed here -->
+            </div>
         </div>
         
         <!-- Inventory List -->
@@ -65,9 +77,26 @@
 
         <!-- Order List Section -->
         <div id="orders_section" style="display: none;">
-            <h2>Orders</h2>
             <div id="orders_table">Loading orders...</div>
         </div>
+
+        <div id="notificationsModal" class="modal">
+            <div class="modal-overlay" onclick="toggleModal('notificationsModal')"></div>
+            <div class="modal-content">
+                <span class="close" onclick="toggleModal('notificationsModal')">&times;</span>
+                <p>Notifications content goes here.</p>
+            </div>
+        </div>
+        
+        <div id="accountModal" class="modal">
+            <div class="modal-overlay" onclick="toggleModal('accountModal')"></div>
+            <div class="modal-content">
+                <span class="close" onclick="toggleModal('accountModal')">&times;</span>
+                <button id="logoutButton" style="display: none;">Logout</button>
+                <p id="user_info" style="display: none;"></p>
+            </div>
+        </div>
+
     </div>
 
     <script src="/script.js"></script>
