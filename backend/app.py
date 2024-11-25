@@ -69,6 +69,39 @@ def logout():
     session.clear()
     return jsonify({"message": "Logged out successfully"}), 200
 
+# Log to audit file
+@app.route('/')
+def log_action(action):
+    logFile = open("log.txt","a")
+    currentDate = datetime.now()
+    print(str(currentDate) + ": ", logFile)
+    print(action, logFile)
+    print("\n", logFile)
+    logFile.close()
+    
+
+#Send audit log out
+@app.route('/')
+def download_log():
+    # Only allow admin to download a log
+    if not session['employee_id']:
+        return {'error': 'Login required'}, 401
+    
+    if session['role'] != 'admin':
+        return {'error': 'Unauthorized'}, 403
+    
+    return send_from_directory(app.static_folder, 'log.txt')
+
+
+#Reset audit log file
+@app.route('/')
+def reset_log():
+    os.remove("log.txt")
+    logFile = open("log.txt","a")
+    currentDate = datetime.now()
+    print(str(currentDate) + ": Log file was reset\n", logFile)
+    logFile.close()
+
 # Route to get all inventory items
 @app.route('/Inventory', methods=['GET'])
 def get_inventory():
