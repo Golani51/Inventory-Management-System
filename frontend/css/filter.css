@@ -1,0 +1,98 @@
+#inventory_filter {
+    font-family: "Montserrat", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    margin: 0 auto;
+    text-align: left; /* Align text and elements to the left */
+    position: relative;
+    display: flex;
+    flex-wrap: wrap; /* Wrap child elements to the next line */
+    gap: 15px;
+    justify-content: center;
+}
+
+#activeFilters {
+    flex-basis: 100%; /* Place on a new line with full width */
+    margin-top: -6px;
+    margin-bottom: 10px;
+    display: flex;
+    flex-wrap: wrap; /* Allow filter boxes to wrap */
+    gap: 10px; /* Space between filters */
+    justify-content: center;
+}
+
+label[for="viewMode"] {
+    margin-left: 20px;
+}
+
+label[for="categoryFilter"] {
+    margin-left: 20px;
+}
+
+label[for="stateFilter"] {
+    margin-left: 20px;
+}
+
+label[for="searchProductId"] {
+    margin-left: 20px;
+}
+
+label[for="searchInventoryId"] {
+    margin-left: 20px;
+}
+
+#OrderIdFilter {
+    margin-left: 20px;
+}
+
+.clear-all-btn {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    padding: 5px 10px;
+    background-color: #ff4d4f;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    font-size: 14px;
+    color: #f8f8f8;
+}
+
+.clear-all-btn:hover {
+    background-color: #c83a3c;
+}
+
+.filter-box {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    padding: 5px 10px;
+    background-color: #ffffff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    font-size: 14px;
+}
+
+.filter-box span {
+    margin-right: 10px;
+    color: #333;
+    font-family: Arial, sans-serif;
+}
+
+.filter-box button {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    padding: 0;
+}
+
+.filter-box:hover {
+    background-color: #f0f0f0;
+}
+
+select {
+    border-radius: 20px;
+}
+.searchProductId {
+    border-radius: 20px;
+}
