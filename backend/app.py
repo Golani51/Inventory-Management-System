@@ -67,9 +67,9 @@ def login():
         return jsonify({"error": "Internal Server Error"}), 500
 
 # Logout
-@app.route('/logout')
+@app.route('/logout', methods=['POST'])
 def logout():
-    session.clear()
+    session.clear()  # Clear all session data
     return jsonify({"message": "Logged out successfully"}), 200
 
 # Route to get all inventory items
@@ -77,6 +77,8 @@ def logout():
 def get_inventory():
     category = request.args.get('category')
     product_id = request.args.get('productId')  # Get the ProductID parameter
+    state = request.args.get('state')  # Get the ProductID parameter
+
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     
@@ -85,6 +87,7 @@ def get_inventory():
                 SELECT Inventory.InventoryID, Inventory.ProductID, Inventory.MaxCapacity as maxqt, 
                     Inventory.AssignedLocation as location, Inventory.LocationState as state, 
                     Inventory.CurrentQuantity as quantity, Inventory.Threshold as thres,
+                    Inventory.StockStatus as stat,
                     Products.ProductName as name, Products.Category as category
                 FROM Inventory
                 JOIN Products ON Inventory.ProductID = Products.ProductID
@@ -102,6 +105,10 @@ def get_inventory():
     if product_id:
         filters.append("Products.ProductID = %s")
         params.append(product_id)
+
+    if state:
+        filters.append("Inventory.LocationState = %s")
+        params.append(state)
     
     # Append filters to the query
     if filters:
@@ -119,80 +126,86 @@ def get_inventory():
 # Handle quantity updates with input validations
 @app.route('/update-quantity', methods=['POST'])
 def update_quantity():
-    data = request.get_json()
-    inventory_id = data['InventoryID']
-    adjustment = data['adjustment']
-    employee_id = session['employee_id']
+    conn, cursor = None, None
     try:
+        data = request.json
+        adjustments = data.get('adjustments', [])
+
+        if not adjustments:
+            return jsonify({"error": "No adjustments provided"}), 400
+
+        employee_id = session.get('employee_id')
+        if not employee_id:
+            return jsonify({"error": "Employee not logged in"}), 401
+
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
 
-        # Fetch inventory details
-        cursor.execute("SELECT * FROM Inventory WHERE InventoryID = %s", (inventory_id,))
-        inventory = cursor.fetchone()
-        if not inventory:
-            return jsonify({"error": "Inventory ID not found"}), 404
+        for adjustment in adjustments:
+            inventory_id = adjustment.get('InventoryID')
+            adjustment_value = adjustment.get('adjustment')
 
-        new_quantity = inventory['CurrentQuantity'] + adjustment
+            if not inventory_id or adjustment_value is None:
+                return jsonify({"error": f"Invalid data in adjustment: {adjustment}"}), 400
 
-        if new_quantity < 0 or (inventory['MaxCapacity'] is not None and new_quantity > inventory['MaxCapacity']):
-            return jsonify({"error": "Invalid quantity adjustment"}), 400
+            cursor.execute("SELECT * FROM Inventory WHERE InventoryID = %s", (inventory_id,))
+            inventory = cursor.fetchone()
+            if not inventory:
+                return jsonify({"error": f"Inventory ID {inventory_id} not found"}), 404
 
-        # Fetch UnitPrice from Products table
-        cursor.execute("SELECT UnitPrice FROM Products WHERE ProductID = %s", (inventory['ProductID'],))
-        product = cursor.fetchone()
+            new_quantity = inventory['CurrentQuantity'] + adjustment_value
+            max_capacity = inventory.get('MaxCapacity')
 
-        if not product or product['UnitPrice'] is None:
-            return jsonify({"error": "Product's UnitPrice not found"}), 404
+            if new_quantity < 0 or (max_capacity is not None and new_quantity > max_capacity):
+                return jsonify({"error": "Invalid quantity adjustment"}), 400
 
-        unit_price = product['UnitPrice']
+            cursor.execute("SELECT UnitPrice FROM Products WHERE ProductID = %s", (inventory['ProductID'],))
+            product = cursor.fetchone()
+            if not product or product.get('UnitPrice') is None:
+                return jsonify({"error": "Product's UnitPrice not found"}), 404
 
-        # Update Inventory table
-        cursor.execute(
-            "UPDATE Inventory SET CurrentQuantity = %s WHERE InventoryID = %s",
-            (new_quantity, inventory_id)
-        )
+            unit_price = product['UnitPrice']
 
-        if (adjustment > 0):
-            # Insert into Orders table
-            cursor.execute(
-                "INSERT INTO Orders (EmployeeID, OrderDate) VALUES (%s, %s)",
-                (employee_id, datetime.now())
-            )
+            cursor.execute("UPDATE Inventory SET CurrentQuantity = %s WHERE InventoryID = %s",
+                           (new_quantity, inventory_id))
 
-            order_id = cursor.lastrowid
+            if adjustment_value > 0:
+                cursor.execute("INSERT INTO Orders (EmployeeID, OrderDate) VALUES (%s, %s)",
+                               (employee_id, datetime.now()))
+                order_id = cursor.lastrowid
 
-            # Insert into OrderDetails table
-            cursor.execute(
-                "INSERT INTO OrderDetails (OrderID, ProductID, Quantity, TotalAmount, InventoryID) "
-                "VALUES (%s, %s, %s, %s, %s)",
-                (
-                    order_id,
-                    inventory['ProductID'],
-                    abs(adjustment),
-                    unit_price * abs(adjustment),
-                    inventory_id
+                cursor.execute(
+                    "INSERT INTO OrderDetails (OrderID, ProductID, Quantity, TotalAmount, InventoryID) "
+                    "VALUES (%s, %s, %s, %s, %s)",
+                    (order_id, inventory['ProductID'], abs(adjustment_value),
+                     unit_price * abs(adjustment_value), inventory_id)
                 )
-            )
 
         conn.commit()
         return jsonify({"message": "Quantity updated successfully"}), 200
 
     except Exception as e:
-        return jsonify({"error": "Quantity update was not successful"}), 500
+        print(f"Error in update_quantity: {str(e)}")
+        return jsonify({"error": "Internal server error", "details": str(e)}), 500
 
     finally:
-        cursor.close()
-        conn.close()
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
 
 # Get information from database for Order List
 @app.route('/Orders', methods=['GET'])
 def fetch_orders():
     try:
+        category = request.args.get('category')
+        order_id = request.args.get('orderId')
+        state = request.args.get('state')
+
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
 
-        # Query to join Orders, OrderDetails, and Products
         query = """
                     SELECT 
                         o.OrderID,
@@ -206,21 +219,96 @@ def fetch_orders():
                         od.InventoryID,
                         p.UnitPrice,
                         p.ProductName,
+                        p.Category,
                         i.AssignedLocation,
-                        i.LocationState
+                        i.LocationState,
+                        s.SupplierName
                     FROM Orders o
                     LEFT JOIN OrderDetails od ON o.OrderID = od.OrderID
                     LEFT JOIN Products p ON od.ProductID = p.ProductID
+                    LEFT JOIN ProductSuppliers ps ON p.ProductID = ps.ProductID
+                    LEFT JOIN Suppliers s ON ps.SupplierID = s.SupplierID
                     LEFT JOIN Employees e ON o.EmployeeID = e.EmployeeID
-                    LEFT JOIN Inventory i ON od.InventoryID = i.InventoryID;
+                    LEFT JOIN Inventory i ON od.InventoryID = i.InventoryID
                 """
+
+        filters = []
+        params = []
         
-        cursor.execute(query)
+        if category:
+            filters.append("p.Category = %s")
+            params.append(category)
+        
+        if order_id:
+            filters.append("o.OrderID = %s")
+            params.append(order_id)
+
+        if state:
+            filters.append("i.LocationState = %s")
+            params.append(state)
+        
+        if filters:
+            query += " WHERE " + " AND ".join(filters)
+        
+        cursor.execute(query, params)
+    
         results = cursor.fetchall()
         return jsonify(results), 200
     
     except Exception as e:
         return jsonify({"error": "Error fetching orders"}), 500
+    
+    finally:
+        conn.close()
+
+@app.route('/order-categories', methods=['GET'])
+def fetch_orderCategories():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute(
+                        """
+                            SELECT DISTINCT p.Category
+                            FROM Orders o
+                            LEFT JOIN OrderDetails od ON o.OrderID = od.OrderID
+                            LEFT JOIN Products p ON od.ProductID = p.ProductID
+                            LEFT JOIN ProductSuppliers ps ON p.ProductID = ps.ProductID
+                            LEFT JOIN Suppliers s ON ps.SupplierID = s.SupplierID
+                            LEFT JOIN Employees e ON o.EmployeeID = e.EmployeeID
+                            LEFT JOIN Inventory i ON od.InventoryID = i.InventoryID
+                        """
+        )
+        results = cursor.fetchall()
+        return jsonify(results), 200
+    
+    except Exception as e:
+        return jsonify({"error": "Error fetching categories"}), 500
+    
+    finally:
+        conn.close()
+
+@app.route('/order-states', methods=['GET'])
+def fetch_orderStates():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute(
+                        """
+                            SELECT DISTINCT i.LocationState
+                            FROM Orders o
+                            LEFT JOIN OrderDetails od ON o.OrderID = od.OrderID
+                            LEFT JOIN Products p ON od.ProductID = p.ProductID
+                            LEFT JOIN ProductSuppliers ps ON p.ProductID = ps.ProductID
+                            LEFT JOIN Suppliers s ON ps.SupplierID = s.SupplierID
+                            LEFT JOIN Employees e ON o.EmployeeID = e.EmployeeID
+                            LEFT JOIN Inventory i ON od.InventoryID = i.InventoryID
+                        """
+        )
+        results = cursor.fetchall()
+        return jsonify(results), 200
+    
+    except Exception as e:
+        return jsonify({"error": "Error fetching states"}), 500
     
     finally:
         conn.close()
@@ -231,7 +319,7 @@ def fetch_categories():
     try:
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT DISTINCT Category FROM Products;")
+        cursor.execute("SELECT DISTINCT Category FROM Products")
         results = cursor.fetchall()
         return jsonify(results), 200
     
@@ -240,6 +328,142 @@ def fetch_categories():
     
     finally:
         conn.close()
+
+# List all the categories in Products table
+@app.route('/states', methods=['GET'])
+def fetch_states():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT DISTINCT LocationState FROM Inventory")
+        results = cursor.fetchall()
+        return jsonify(results), 200
+    
+    except Exception as e:
+        return jsonify({"error": "Error fetching states"}), 500
+    
+    finally:
+        conn.close()
+
+@app.route('/short-categories', methods=['GET'])
+def fetch_shortCategories():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute(
+                """
+                    SELECT DISTINCT Category
+                    FROM Inventory
+                    JOIN Products ON Inventory.ProductID = Products.ProductID
+                    WHERE Inventory.StockStatus = 'Low'
+                """)
+        results = cursor.fetchall()
+        return jsonify(results), 200
+    
+    except Exception as e:
+        return jsonify({"error": "Error fetching categories"}), 500
+    
+    finally:
+        conn.close()
+
+@app.route('/short-states', methods=['GET'])
+def fetch_shortStates():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute(
+                        """
+                            SELECT DISTINCT LocationState
+                            FROM Inventory
+                            JOIN Products ON Inventory.ProductID = Products.ProductID
+                            WHERE Inventory.StockStatus = 'Low'
+                        """)
+        results = cursor.fetchall()
+        return jsonify(results), 200
+    
+    except Exception as e:
+        return jsonify({"error": "Error fetching states"}), 500
+    
+    finally:
+        conn.close()
+
+
+@app.route('/update-stock-status', methods=['POST'])
+def update_stock_status():
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor()
+
+        cursor.execute(
+                        """
+                            UPDATE Inventory
+                            SET StockStatus = CASE
+                                WHEN (1 - (CurrentQuantity / MaxCapacity)) > Threshold THEN 'Low'
+                                ELSE 'Enough'
+                            END
+                        """)
+        connection.commit()
+        return jsonify({'success': True}), 200
+
+    except Exception as e:
+        print(f"Error updating stock status: {e}")
+        return jsonify({'error': str(e)}), 500
+
+    finally:
+        cursor.close()
+        connection.close()
+
+@app.route('/low-stock-list', methods=['GET'])
+def get_low_stock():
+    try:
+        category = request.args.get('category')
+        inventory_id = request.args.get('orderId')
+        state = request.args.get('state')
+
+        connection = get_db_connection()
+        cursor = connection.cursor(dictionary = True)
+
+        query = """
+                    SELECT Inventory.InventoryID, Inventory.ProductID, Inventory.MaxCapacity as maxqt, 
+                        Inventory.AssignedLocation as location, Inventory.LocationState as state, 
+                        Inventory.CurrentQuantity as quantity, Inventory.Threshold as thres,
+                        Inventory.StockStatus as stat,
+                        Products.ProductName as name, Products.Category as category
+                    FROM Inventory
+                    JOIN Products ON Inventory.ProductID = Products.ProductID
+                    WHERE Inventory.StockStatus = 'Low'
+                """
+        
+        filters = []
+        params = []
+        
+        if category:
+            filters.append("Products.Category = %s")
+            params.append(category)
+        
+        if inventory_id:
+            filters.append("Inventory.InventoryID = %s")
+            params.append(inventory_id)
+
+        if state:
+            filters.append("Inventory.LocationState = %s")
+            params.append(state)
+        
+        if filters:
+            query += " AND " + " AND ".join(filters)
+        
+        cursor.execute(query, params)
+        results = cursor.fetchall()
+        return jsonify(results)
+
+    except Exception as e:
+        print(f"Error updating stock status: {e}")
+        return jsonify({'error': str(e)}), 500
+
+    finally:
+        cursor.close()
+        connection.close()
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=4000)
