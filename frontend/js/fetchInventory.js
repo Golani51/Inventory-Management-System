@@ -93,18 +93,33 @@ function renderGroupedByLocation(data, inventoryDiv) {
 
         // Add header to the dropdown table
         const dropdownHeader = document.createElement('tr');
-        dropdownHeader.innerHTML = `
-            <thead>
-            <th>Select</th>
-            <th>Inventory ID</th>
-            <th>Product Name</th>
-            <th>Item Category</th>
-            <th>Current Quantity</th>
-            <th>Max Quantity</th>
-            <th>Adjustment</th>
-            <th>Stock Status</th>
-            </thead>
-        `;
+
+        if (userRole === 'admin') {
+            dropdownHeader.innerHTML = `
+                <thead>
+                <th>Select</th>
+                <th>Inventory ID</th>
+                <th>Product Name</th>
+                <th>Item Category</th>
+                <th>Current Quantity</th>
+                <th>Max Quantity</th>
+                <th>Adjustment</th>
+                <th>Stock Status</th>
+                </thead>
+            `;
+        } else {
+            dropdownHeader.innerHTML = `
+                <thead>
+                <th>Select</th>
+                <th>Inventory ID</th>
+                <th>Product Name</th>
+                <th>Item Category</th>
+                <th>Current Quantity</th>
+                <th>Max Quantity</th>
+                <th>Stock Status</th>
+                </thead>
+            `;
+        }
         dropdownTable.appendChild(dropdownHeader);
 
         // Add inventory details
@@ -125,27 +140,41 @@ function renderGroupedByLocation(data, inventoryDiv) {
             }
 
             // Dropdown contents
-            row.innerHTML = `
-                <tbody>
-                <td><input type="checkbox" class="item-checkbox" data-id="${item.InventoryID}"></td>
-                <td>${item.InventoryID}</td>
-                <td>${item.name}</td>
-                <td>${item.category}</td>
-                <td id="quantity-${item.InventoryID}">${item.quantity}</td>
-                <td id="maxQuantity-${item.InventoryID}">${item.maxqt}</td>
-                <td>
-                    <input type="number" id="adjustment-${item.InventoryID}" value="1" style="width: 50px; border-radius: 20px;">
-                    <label>
-                    <input type="radio" name="action-${item.InventoryID}" value="add" checked>
-                    Add
-                    </label>
-                    <label>
-                        <input type="radio" name="action-${item.InventoryID}" value="subtract">
-                        Subtract
-                    </label>    
-                </td>
-                </tbody>
-            `;
+
+            if (userRole === 'admin') {
+                row.innerHTML = `
+                    <tbody>
+                    <td><input type="checkbox" class="item-checkbox" data-id="${item.InventoryID}"></td>
+                    <td>${item.InventoryID}</td>
+                    <td>${item.name}</td>
+                    <td>${item.category}</td>
+                    <td id="quantity-${item.InventoryID}">${item.quantity}</td>
+                    <td id="maxQuantity-${item.InventoryID}">${item.maxqt}</td>
+                    <td>
+                        <input type="number" id="adjustment-${item.InventoryID}" value="1" style="width: 50px; border-radius: 20px;">
+                        <label>
+                        <input type="radio" name="action-${item.InventoryID}" value="add" checked>
+                        Add
+                        </label>
+                        <label>
+                            <input type="radio" name="action-${item.InventoryID}" value="subtract">
+                            Subtract
+                        </label>    
+                    </td>
+                    </tbody>
+                `;
+            } else {
+                row.innerHTML = `
+                    <tbody>
+                    <td><input type="checkbox" class="item-checkbox" data-id="${item.InventoryID}"></td>
+                    <td>${item.InventoryID}</td>
+                    <td>${item.name}</td>
+                    <td>${item.category}</td>
+                    <td id="quantity-${item.InventoryID}">${item.quantity}</td>
+                    <td id="maxQuantity-${item.InventoryID}">${item.maxqt}</td>
+                    </tbody>
+                `;
+            }
 
             const stockStatusCell = document.createElement('td');
             stockStatusCell.appendChild(stockButton);
@@ -220,7 +249,22 @@ function renderGroupedByProduct(data, inventoryDiv) {
 
         // Add header to the dropdown table
         const dropdownHeader = document.createElement('tr');
-        dropdownHeader.innerHTML = `
+
+        if (userRole === 'admin') {
+            dropdownHeader.innerHTML = `
+                <thead>
+                <th>Select</th>
+                <th>Inventory ID</th>
+                <th>Location</th>
+                <th>State</th>
+                <th>Current Quantity</th>
+                <th>Max Quantity</th>
+                <th>Adjustment</th>
+                <th>Stock Status</th>
+                </thead>
+            `;
+        } else {
+            dropdownHeader.innerHTML = `
             <thead>
             <th>Select</th>
             <th>Inventory ID</th>
@@ -228,10 +272,10 @@ function renderGroupedByProduct(data, inventoryDiv) {
             <th>State</th>
             <th>Current Quantity</th>
             <th>Max Quantity</th>
-            <th>Adjustment</th>
             <th>Stock Status</th>
             </thead>
         `;
+        }
         dropdownTable.appendChild(dropdownHeader);
 
         // Add inventory details
@@ -252,33 +296,44 @@ function renderGroupedByProduct(data, inventoryDiv) {
             }
 
             // Dropdown contents
-            row.innerHTML = `
-                <tbody>
-                <td><input type="checkbox" class="item-checkbox" data-id="${item.InventoryID}"></td>
-                <td>${item.InventoryID}</td>
-                <td>${item.location}</td>
-                <td>${item.state}</td>
-                <td id="quantity-${item.InventoryID}">${item.quantity}</td>
-                <td id="maxQuantity-${item.InventoryID}">${item.maxqt}</td>
-                <td>
-                    <input 
-                    type="number" 
-                    id="adjustment-${item.InventoryID}" 
-                    value="${inputValues[item.InventoryID] || 1}" 
-                    style="width: 50px; border-radius: 20px;"
-                    oninput="inputValues[${item.InventoryID}] = this.value.trim()"
-                    >      
-                    <label>
-                    <input type="radio" name="action-${item.InventoryID}" value="add" checked>
-                    Add
-                    </label>
-                    <label>
-                        <input type="radio" name="action-${item.InventoryID}" value="subtract">
-                        Subtract
-                    </label>                   
-                </td>
-            `;
-
+            if (userRole === 'admin') {
+                row.innerHTML = `
+                    <tbody>
+                    <td><input type="checkbox" class="item-checkbox" data-id="${item.InventoryID}"></td>
+                    <td>${item.InventoryID}</td>
+                    <td>${item.location}</td>
+                    <td>${item.state}</td>
+                    <td id="quantity-${item.InventoryID}">${item.quantity}</td>
+                    <td id="maxQuantity-${item.InventoryID}">${item.maxqt}</td>
+                    <td>
+                        <input 
+                        type="number" 
+                        id="adjustment-${item.InventoryID}" 
+                        value="${inputValues[item.InventoryID] || 1}" 
+                        style="width: 50px; border-radius: 20px;"
+                        oninput="inputValues[${item.InventoryID}] = this.value.trim()"
+                        >      
+                        <label>
+                        <input type="radio" name="action-${item.InventoryID}" value="add" checked>
+                        Add
+                        </label>
+                        <label>
+                            <input type="radio" name="action-${item.InventoryID}" value="subtract">
+                            Subtract
+                        </label>                   
+                    </td>
+                `;
+            } else {
+                row.innerHTML = `
+                    <tbody>
+                    <td><input type="checkbox" class="item-checkbox" data-id="${item.InventoryID}"></td>
+                    <td>${item.InventoryID}</td>
+                    <td>${item.location}</td>
+                    <td>${item.state}</td>
+                    <td id="quantity-${item.InventoryID}">${item.quantity}</td>
+                    <td id="maxQuantity-${item.InventoryID}">${item.maxqt}</td>
+                `;
+            }
             const stockStatusCell = document.createElement('td');
             stockStatusCell.appendChild(stockButton);
             row.appendChild(stockStatusCell);

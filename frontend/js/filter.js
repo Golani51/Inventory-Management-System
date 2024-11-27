@@ -180,7 +180,10 @@ function renderShorts(data, container) {
 
     // Add header to the dropdown table
     const dropdownHeader = document.createElement('tr');
-    dropdownHeader.innerHTML = `
+
+
+    if (userRole === 'admin') {
+        dropdownHeader.innerHTML = `
         <th>Select</th>
         <th>Inventory ID</th>
         <th>Product Name</th>
@@ -192,6 +195,20 @@ function renderShorts(data, container) {
         <th>Adjustment</th>
         <th>Stock Status</th>
     `;
+    } else {
+        dropdownHeader.innerHTML = `
+        <th>Select</th>
+        <th>Inventory ID</th>
+        <th>Product Name</th>
+        <th>Category</th>
+        <th>Location</th>
+        <th>State</th>
+        <th>Current Quantity</th>
+        <th>Max Quantity</th>
+        <th>Stock Status</th>
+    `;
+    }
+
     dropdownTable.appendChild(dropdownHeader);
 
     // Add inventory details
@@ -212,6 +229,7 @@ function renderShorts(data, container) {
         }
 
         // Dropdown contents
+        if (userRole === 'admin') {
         row.innerHTML = `
             <td><input type="checkbox" class="item-checkbox" data-id="${item.InventoryID}"></td>
             <td>${item.InventoryID}</td>
@@ -239,6 +257,18 @@ function renderShorts(data, container) {
                 </label> 
             </td>
         `;
+        } else {
+            row.innerHTML = `
+            <td><input type="checkbox" class="item-checkbox" data-id="${item.InventoryID}"></td>
+            <td>${item.InventoryID}</td>
+            <td>${item.name}</td>
+            <td>${item.category}</td>
+            <td>${item.location}</td>
+            <td>${item.state}</td>
+            <td id="quantity-${item.InventoryID}">${item.quantity}</td>
+            <td>${item.maxqt}</td>
+            `;
+        }
 
         const stockStatusCell = document.createElement('td');
         stockStatusCell.appendChild(stockButton);
