@@ -63,6 +63,12 @@ function configureUIAfterLogin(data) {
 
     userRole = data.role;
 
+    if (userRole === "admin") {
+        document.getElementById('auditLog').style.display = 'block';
+    } else {
+        document.getElementById('auditLog').style.display = 'none';
+    }
+
     // Load dropdown options and inventory
     updateStockStatus();
     fetchInventory();
@@ -110,7 +116,7 @@ function showSection(sectionId) {
             document.getElementById('OrderIdFilter').style.display = 'none';
             document.getElementById('InventoryIdFilter').style.display = 'none';
             document.getElementById('activeFilters').style.display = 'flex';
-            
+
             if (userRole === 'admin') {
                 document.getElementById('selectAllBox').style.display = 'block';
                 document.getElementById('adjustSelectedButton').style.display = 'block';
