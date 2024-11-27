@@ -20,6 +20,25 @@
     justify-content: center;
 }
 
+label[for="selectAll"] {
+    align-content: center;
+    margin-top:0px;
+}
+
+#selectAllBox {
+    display: flex;
+    align-items: center; 
+    gap: 5px; 
+    font-size: 14px; 
+    font-family: "Montserrat", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+#selectAll {
+    margin-top: 0px;
+    vertical-align: middle;
+}
+
+
 label[for="viewMode"] {
     margin-left: 20px;
 }
@@ -32,11 +51,11 @@ label[for="stateFilter"] {
     margin-left: 20px;
 }
 
-label[for="searchProductId"] {
+label[for="searchProduct"] {
     margin-left: 20px;
 }
 
-label[for="searchInventoryId"] {
+label[for="searchInventory"] {
     margin-left: 20px;
 }
 
@@ -90,9 +109,12 @@ label[for="searchInventoryId"] {
     background-color: #f0f0f0;
 }
 
-select {
+/* Ensuring consistent height for select and input elements */
+select, input[type="text"], input[type="checkbox"] {
+    height: 30px;
+    padding: 5px 10px;
+    font-size: 12px;
+    border: 1px solid #ccc;
     border-radius: 20px;
-}
-.searchProductId {
-    border-radius: 20px;
+    box-sizing: border-box; /* Ensures padding doesn't affect size */
 }

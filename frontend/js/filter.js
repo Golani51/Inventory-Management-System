@@ -244,7 +244,7 @@ function renderShorts(data, container) {
                 type="number" 
                 id="adjustment-${item.InventoryID}" 
                 value="${inputValues[item.InventoryID] || 1}" 
-                style="width: 50px; border-radius: 20px;"
+                style="width: 50px; border-radius: 20px; border: 1px solid black;"
                 oninput="inputValues[${item.InventoryID}] = this.value.trim()"
                 >                    
                 <label>
@@ -355,7 +355,7 @@ async function filterInventoryByState() {
 }
 
 async function searchByProductId() {
-    const productId = document.getElementById('searchProductId').value.trim();
+    const productId = document.getElementById('searchProduct').value.trim();
     if (!productId) {
         alert('Please enter a ProductID to search.');
         return;
@@ -367,7 +367,7 @@ async function searchByProductId() {
 }
 
 async function searchByOrderId() {
-    const orderId = document.getElementById('searchOrderId').value.trim();
+    const orderId = document.getElementById('searchOrder').value.trim();
     if (!orderId) {
         alert('Please enter an OrderID to search.');
         return;
@@ -379,8 +379,8 @@ async function searchByOrderId() {
 }
 
 async function searchByInventoryId() {
-    const orderId = document.getElementById('searchInventoryId').value.trim();
-    if (!orderId) {
+    const inventoryId = document.getElementById('searchInventory').value.trim();
+    if (!inventoryId) {
         alert('Please enter an Inventory to search.');
         return;
     }
@@ -414,9 +414,9 @@ function renderActiveFilters() {
         // Reset all filter inputs
         document.getElementById('categoryFilter').value = '';
         document.getElementById('stateFilter').value = '';
-        document.getElementById('searchProductId').value = '';
-        document.getElementById('searchOrderId').value = '';
-        document.getElementById('searchInventoryId').value = '';
+        document.getElementById('searchProduct').value = '';
+        document.getElementById('searchOrder').value = '';
+        document.getElementById('searchInventory').value = '';
 
         renderActiveFilters(); // Update filter boxes
         fetchFilteredInventory();
@@ -451,7 +451,7 @@ function renderActiveFilters() {
         hasActiveFilters = true;
         const productIdFilter = createFilterBox('ProductID', activeFilters.productId, () => {
             activeFilters.productId = null; // Remove ProductID filter
-            document.getElementById('searchProductId').value = ''; // Clear input
+            document.getElementById('searchProduct').value = ''; // Clear input
             fetchFilteredInventory(); // Reload inventory
         });
         filterContainer.appendChild(productIdFilter);
@@ -461,7 +461,7 @@ function renderActiveFilters() {
         hasActiveFilters = true;
         const orderIdFilter = createFilterBox('OrderID', activeFilters.orderId, () => {
             activeFilters.orderId = null; // Remove OrderID filter
-            document.getElementById('searchOrderId').value = ''; // Clear input
+            document.getElementById('searchOrder').value = ''; // Clear input
             fetchFilteredInventory(); // Reload inventory
         });
         filterContainer.appendChild(orderIdFilter);
@@ -469,12 +469,12 @@ function renderActiveFilters() {
 
     if (activeFilters.inventoryId) {
         hasActiveFilters = true;
-        const orderIdFilter = createFilterBox('InventoryID', activeFilters.orderId, () => {
-            activeFilters.orderId = null; // Remove OrderID filter
-            document.getElementById('searchInventoryId').value = ''; // Clear input
+        const inventoryIdFilter = createFilterBox('InventoryID', activeFilters.inventoryId, () => {
+            activeFilters.inventoryId = null; // Remove OrderID filter
+            document.getElementById('searchInventory').value = ''; // Clear input
             fetchFilteredInventory(); // Reload inventory
         });
-        filterContainer.appendChild(orderIdFilter);
+        filterContainer.appendChild(inventoryIdFilter);
     }
 
     // Show or hide the "Clear All" button based on active filters
@@ -561,9 +561,3 @@ function resetSelectAllCheckbox() {
     }
     isSelectAllChecked = false;
 }
-
-// Align ActiveFilters on page load
-document.addEventListener('DOMContentLoaded', alignActiveFilters);
-
-// Align ActiveFilters on window resize (to handle responsive changes)
-window.addEventListener('resize', alignActiveFilters);

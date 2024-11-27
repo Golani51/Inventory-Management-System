@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="./css/table.css">
     <link rel="stylesheet" href="./css/modal.css">
     <link rel="stylesheet" href="./css/filter.css">
+    <link rel="stylesheet" href="./css/adjustButton.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital@0;1&display=swap" rel="stylesheet">
@@ -42,9 +43,9 @@
         <div id="login_section">
             <form id="loginForm">
                 <label for="username">Username:</label>
-                <input type="text" id="username" name="username" required><br>
+                <input type="text" id="username" name="username" required autocomplete="off"><br>
                 <label for="password">Password:</label>
-                <input type="password" id="password" name="password" required><br>
+                <input type="password" id="password" name="password" required autocomplete="off"><br>
                 <button type="submit">Login</button>
                 <p id="loginNotif"></p>
             </form>
@@ -52,39 +53,41 @@
 
         <!-- Filter Section -->
         <div id="inventory_filter">
-            <label for="'selectAll" id="selectAllBox">
-                Select All
-                <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)">
+            <label for="selectAll" id="selectAllBox">Select All
+            <input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)">
             </label>
 
-            <label for="viewMode" id = "viewModeFilter">View Mode:</label>
+            <label for="viewMode">View Mode:
             <select id="viewMode" onchange="changeViewMode()">
                 <option value="product">Group by Product</option>
                 <option value="location">Group by Location</option>
             </select>
+            </label>
 
-            <label for="categoryFilter" id="categoryFilterContainer"> Item Category:</label>
+            <label for="categoryFilter"> Item Category:
             <select id="categoryFilter" onchange="filterInventoryByCategory()">
                 <option value="">All Categories</option>
             </select>
+            </label>
 
-            <label for="stateFilter" id="stateFilterContainer"> State:</label>
+            <label for="stateFilter"> State:
             <select id="stateFilter" onchange="filterInventoryByState()">
                 <option value="">All Categories</option>
             </select>
+            </label>
 
-            <label for="searchProductId" id="ProductIdFilter">Search by ProductID:
-            <input type="text" id="searchProductId" placeholder="Enter ProductID">
+            <label for="searchProduct">Search by ProductID:
+            <input type="text" id="searchProduct" placeholder="Enter ProductID">
             <button id = "searchIdProductButton" onclick="searchByProductId()">Search</button>
             </label>
 
-            <label for="searchOrderId" id="OrderIdFilter">Search by OrderID:
-            <input type="text" id="searchOrderId" placeholder="Enter OrderID">
+            <label for="searchOrder">Search by OrderID:
+            <input type="text" id="searchOrder" placeholder="Enter OrderID">
             <button id = "searchIdOrderButton" onclick="searchByOrderId()">Search</button>
             </label>
 
-            <label for="searchInventoryId" id="InventoryIdFilter">Search by InventoryID:
-            <input type="text" id="searchInventoryId" placeholder="Enter InventoryID">
+            <label for="searchInventory">Search by InventoryID:
+            <input type="text" id="searchInventory" placeholder="Enter InventoryID">
             <button id = "searchIdInventoryButton" onclick="searchByInventoryId()">Search</button>
             </label>
 
@@ -109,7 +112,7 @@
         </div>
 
         <div id="buttonContainer">
-            <button id="adjustSelectedButton" style="display: none;" onclick="adjustSelectedItems()">Adjust Selected Items</button>
+            <button class="adjustSelectedButton" onclick="adjustSelectedItems()">Adjust Selected Items</button>
         </div>
 
         <div id="notificationsModal" class="modal">

@@ -1,6 +1,6 @@
 let inputValues = {}; // Global store for user input values
 
-document.getElementById('searchProductId').addEventListener('keypress', function (event) {
+document.getElementById('searchProduct').addEventListener('keypress', function (event) {
     if (event.key === 'Enter') {
         event.preventDefault();
         searchByProductId();
@@ -151,7 +151,7 @@ function renderGroupedByLocation(data, inventoryDiv) {
                     <td id="quantity-${item.InventoryID}">${item.quantity}</td>
                     <td id="maxQuantity-${item.InventoryID}">${item.maxqt}</td>
                     <td>
-                        <input type="number" id="adjustment-${item.InventoryID}" value="1" style="width: 50px; border-radius: 20px;">
+                        <input type="number" id="adjustment-${item.InventoryID}" value="1" style="width: 50px; border-radius: 20px; border: 1px solid black;">
                         <label>
                         <input type="radio" name="action-${item.InventoryID}" value="add" checked>
                         Add
@@ -310,7 +310,7 @@ function renderGroupedByProduct(data, inventoryDiv) {
                         type="number" 
                         id="adjustment-${item.InventoryID}" 
                         value="${inputValues[item.InventoryID] || 1}" 
-                        style="width: 50px; border-radius: 20px;"
+                        style="width: 50px; border-radius: 20px; border: 1px solid black;"
                         oninput="inputValues[${item.InventoryID}] = this.value.trim()"
                         >      
                         <label>
@@ -349,10 +349,31 @@ function renderGroupedByProduct(data, inventoryDiv) {
 }
 
 async function adjustSelectedItems() {
+    var errorCount = 0;
+
     const selectedCheckboxes = document.querySelectorAll('.item-checkbox:checked'); // Get all selected checkboxes
+    const adjButton = document.querySelector(".adjustSelectedButton");
+
+    adjButton.blur();
+    adjButton.disabled = true;
 
     if (selectedCheckboxes.length === 0) {
-        showModal('Warning', 'No items selected.');
+        errorCount++;
+        // Add error class
+        adjButton.classList.add('error');
+
+        // Reset and trigger animation
+        adjButton.classList.remove('animate');
+        void adjButton.offsetWidth; // Trigger reflow to restart animation
+        adjButton.classList.add('animate');
+
+        setTimeout(() => {
+            adjButton.classList.remove('animate');
+            adjButton.classList.remove('error');
+            displayModal('Warning', errorCount, 'No items were selected.');
+            adjButton.disabled = false; 
+        }, 3400);
+        
         return;
     }
 
@@ -366,7 +387,8 @@ async function adjustSelectedItems() {
 
         // Validation: Check if adjustment value is valid
         if (isNaN(adjustmentValue) || adjustmentValue <= 0) {
-            errorMessages.push(`Invalid adjustment value for Inventory ID ${inventoryID}. Please enter a positive number.`);
+            errorMessages.push(`Invalid adjustment value for Inventory ID ${inventoryID}.`);
+            errorCount ++;
             return;
         }
 
@@ -380,12 +402,14 @@ async function adjustSelectedItems() {
 
         // Validation: Ensure the new quantity is within valid limits
         if (newQuantity > maxQuantity) {
-            errorMessages.push(`Cannot exceed MaxQuantity for Inventory ID ${inventoryID}. MaxQuantity is ${maxQuantity}.`);
+            errorMessages.push(`Cannot exceed MaxQuantity for Inventory ID ${inventoryID}.`);
+            errorCount ++;
             return;
         }
 
         if (newQuantity < 0) {
             errorMessages.push(`Quantity cannot be less than 0 for Inventory ID ${inventoryID}.`);
+            errorCount ++;
             return;
         }
 
@@ -398,7 +422,21 @@ async function adjustSelectedItems() {
 
     // If there are validation errors, show them in the modal
     if (errorMessages.length > 0) {
-        showModal('Warning', errorMessages.join('\n'));
+        // Add error class
+        adjButton.classList.add('error');
+
+        // Reset and trigger animation
+        adjButton.classList.remove('animate');
+        void adjButton.offsetWidth; // Trigger reflow to restart animation
+        adjButton.classList.add('animate');
+
+        setTimeout(() => {
+            adjButton.classList.remove('animate');
+            adjButton.classList.remove('error');
+            // Show modal with warning
+            displayModal('Warning', errorCount, errorMessages.join('\n'));
+            adjButton.disabled = false; 
+        }, 3400);
         return;
     }
 
@@ -411,7 +449,26 @@ async function adjustSelectedItems() {
         });
 
         if (response.ok) {
-            alert('Quantities adjusted successfully.');
+            // Add error class
+            adjButton.classList.add('success');
+
+            // Reset and trigger animation
+            adjButton.classList.remove('animate');
+            void adjButton.offsetWidth; // Trigger reflow to restart animation
+
+            setTimeout(() => {
+                adjButton.classList.add('success-bg'); // Clean up after animation
+            }, 2500);
+            adjButton.classList.add('animate');
+
+            setTimeout(() => {
+                adjButton.classList.remove('success-bg');
+                adjButton.classList.remove('animate');
+                adjButton.classList.remove('success');
+                displayModal('Success', errorCount, 'Quantities adjusted successfully.');
+                adjButton.disabled = false; 
+            }, 3000);
+
             // Update stock statuses
             await updateStockStatus();
             await fetchInventory();
@@ -422,11 +479,36 @@ async function adjustSelectedItems() {
             }
         } else {
             const error = await response.json();
-            showModal('Warning', `Error: ${error.error}`);
+            // Add error class
+            adjButton.classList.add('error');
+
+            // Reset and trigger animation
+            adjButton.classList.remove('animate');
+            void adjButton.offsetWidth; // Trigger reflow to restart animation
+            adjButton.classList.add('animate');
+
+            setTimeout(() => {
+                adjButton.classList.remove('animate');
+                adjButton.classList.remove('error');
+                displayModal('Warning', `Error: ${error.error}`);
+                adjButton.disabled = false; 
+            }, 3400);
         }
+
     } catch (error) {
-        showModal('Warning', 'Error adjusting quantities.');
-        console.error(error);
+        // Add error class
+        adjButton.classList.add('error');
+
+        // Reset and trigger animation
+        adjButton.classList.remove('animate');
+        void adjButton.offsetWidth; // Trigger reflow to restart animation
+        adjButton.classList.add('animate');
+
+        setTimeout(() => {
+            adjButton.classList.remove('animate');
+            adjButton.classList.remove('error');
+            displayModal('Warning', 'Error adjusting quantities.');
+        }, 3400);
     }
 }
 
@@ -545,7 +627,7 @@ function showLowStockNotification() {
     stripe.style.left = '0';
     stripe.style.width = '5px';
     stripe.style.height = '100%';
-    stripe.style.backgroundColor = 'red';
+    stripe.style.backgroundColor = '#ea4f5e';
     stripe.style.borderTopLeftRadius = '10px';
     stripe.style.borderBottomLeftRadius = '10px';
 
@@ -555,7 +637,7 @@ function showLowStockNotification() {
     const icon = document.createElement('span');
     icon.className = 'material-symbols-outlined';
     icon.textContent = 'info';
-    icon.style.color = 'red';
+    icon.style.color = '#ea4f5e';
     icon.style.fontSize = '24px'; 
 
     // Create a clickable element
@@ -563,7 +645,7 @@ function showLowStockNotification() {
     link.textContent = 'You have low stock items!';
     link.href = 'javascript:void(0)';
     link.style.textDecoration = 'none';
-    link.style.color = 'red';
+    link.style.color = '#ea4f5e';
     link.addEventListener('click', () => {
         closeModal('notificationsModal');
         showSection('short_list');
@@ -594,7 +676,7 @@ function hideLowStockNotification() {
     stripe.style.left = '0';
     stripe.style.width = '5px'; // Adjust the stripe width
     stripe.style.height = '100%'; // Make it span the full height of the modal
-    stripe.style.backgroundColor = 'blue'; // Set the stripe color
+    stripe.style.backgroundColor = '#678f64'; // Set the stripe color
     stripe.style.borderTopLeftRadius = '10px'; // Match the modal's border radius
     stripe.style.borderBottomLeftRadius = '10px'; // Match the modal's border radius
 
@@ -604,7 +686,7 @@ function hideLowStockNotification() {
     const icon = document.createElement('span');
     icon.className = 'material-symbols-outlined';
     icon.textContent = 'info';
-    icon.style.color = 'blue';
+    icon.style.color = '#678f64';
     icon.style.fontSize = '24px'; 
 
     // Create a clickable element

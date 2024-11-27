@@ -41,12 +41,14 @@ function hideRestrictedSections() {
 
     document.getElementById('loginForm').style.display = 'block';
     document.getElementById('inventory_filter').style.display = 'none';
-    document.getElementById('adjustSelectedButton').style.display = 'none';
     document.getElementById('notif').textContent = `You need to login.`;
     document.getElementById('logoutButton').style.display = 'none';
     document.getElementById('user_info').style.display = 'none';
     document.getElementById('user_greeting').style.display = 'block';
     document.getElementById('user_greeting').textContent = `You need to login.`;
+    Array.from(document.getElementsByClassName('adjustSelectedButton')).forEach(button => {
+        button.style.display = 'none';
+    });
 }
 
 // Show restricted sections and configure the UI after login
@@ -74,7 +76,10 @@ function configureUIAfterLogin(data) {
     fetchInventory();
 
     document.getElementById('inventory_filter').style.display = 'block';
-    document.getElementById('adjustSelectedButton').style.display = 'block';
+    Array.from(document.getElementsByClassName('adjustSelectedButton')).forEach(button => {
+        button.style.display = 'block';
+    });
+    
 
     // Show the inventory section by default
     showSection('inventory_list');
@@ -110,22 +115,27 @@ function showSection(sectionId) {
             inventoryFilter.style.display = 'flex';
             inventoryFilter.style.margin = '0 auto'; // Center it horizontally
         
-            document.getElementById('viewModeFilter').style.display = 'block';
-            document.getElementById('viewMode').style.display = 'block';
-            document.getElementById('ProductIdFilter').style.display = 'block';
-            document.getElementById('OrderIdFilter').style.display = 'none';
-            document.getElementById('InventoryIdFilter').style.display = 'none';
+            document.querySelector('label[for="viewMode"]').style.display = 'block';
+            document.querySelector('label[for="searchProduct"]').style.display = 'block';
+            document.querySelector('label[for="searchOrder"]').style.display = 'none';
+            document.querySelector('label[for="searchInventory"]').style.display = 'none';
             document.getElementById('activeFilters').style.display = 'flex';
 
             if (userRole === 'admin') {
-                document.getElementById('selectAllBox').style.display = 'block';
-                document.getElementById('adjustSelectedButton').style.display = 'block';
+                document.querySelector('label[for="selectAll"]').style.display = 'block';
+                Array.from(document.getElementsByClassName('adjustSelectedButton')).forEach(button => {
+                    button.style.display = 'block';
+                });
+                
             } else {
-                document.getElementById('selectAllBox').style.display = 'none';
-                document.getElementById('adjustSelectedButton').style.display = 'none';
+                document.querySelector('label[for="selectAll"]').style.display = 'none';
+                Array.from(document.getElementsByClassName('adjustSelectedButton')).forEach(button => {
+                    button.style.display = 'none';
+                });
+                
             }
         
-            document.getElementById('categoryFilterContainer').style.marginLeft = '20px'
+            document.querySelector('label[for="categoryFilter"]').style.marginLeft = '20px';
 
             fetchCategories();
             fetchStates();
@@ -137,17 +147,19 @@ function showSection(sectionId) {
             const inventoryFilter = document.getElementById('inventory_filter');
             inventoryFilter.style.display = 'flex';
             inventoryFilter.style.margin = '0 auto'; // Center it horizontally
-        
-            document.getElementById('selectAllBox').style.display = 'none';
-            document.getElementById('viewModeFilter').style.display = 'none';
-            document.getElementById('viewMode').style.display = 'none';
-            document.getElementById('ProductIdFilter').style.display = 'none';
-            document.getElementById('OrderIdFilter').style.display = 'block';
-            document.getElementById('InventoryIdFilter').style.display = 'none';
-            document.getElementById('activeFilters').style.display = 'flex';
-            document.getElementById('adjustSelectedButton').style.display = 'none';
 
-            document.getElementById('categoryFilterContainer').style.marginLeft = '0px'
+            document.querySelector('label[for="selectAll"]').style.display = 'none';
+            document.querySelector('label[for="viewMode"]').style.display = 'none';
+            document.querySelector('label[for="searchProduct"]').style.display = 'none';
+            document.querySelector('label[for="searchOrder"]').style.display = 'block';
+            document.querySelector('label[for="searchInventory"]').style.display = 'none';
+            document.getElementById('activeFilters').style.display = 'flex';
+
+            Array.from(document.getElementsByClassName('adjustSelectedButton')).forEach(button => {
+                button.style.display = 'none';
+            });
+            
+            document.querySelector('label[for="categoryFilter"]').style.marginLeft = '20px';
         
             fetchCategories();
             fetchStates();
@@ -159,23 +171,30 @@ function showSection(sectionId) {
             const inventoryFilter = document.getElementById('inventory_filter');
             inventoryFilter.style.display = 'flex';
             inventoryFilter.style.margin = '0 auto'; // Center it horizontally
-        
-            document.getElementById('viewModeFilter').style.display = 'none';
-            document.getElementById('viewMode').style.display = 'none';
-            document.getElementById('ProductIdFilter').style.display = 'none';
-            document.getElementById('OrderIdFilter').style.display = 'none';
-            document.getElementById('InventoryIdFilter').style.display = 'block';
+
+            document.querySelector('label[for="selectAll"]').style.display = 'none';
+            document.querySelector('label[for="viewMode"]').style.display = 'none';
+            document.querySelector('label[for="searchProduct"]').style.display = 'none';
+            document.querySelector('label[for="searchOrder"]').style.display = 'none';
+            document.querySelector('label[for="searchInventory"]').style.display = 'block';
             document.getElementById('activeFilters').style.display = 'flex';
 
+
             if (userRole === 'admin') {
-                document.getElementById('selectAllBox').style.display = 'block';
-                document.getElementById('adjustSelectedButton').style.display = 'block';
+                document.querySelector('label[for="selectAll"]').style.display = 'block';
+                Array.from(document.getElementsByClassName('adjustSelectedButton')).forEach(button => {
+                    button.style.display = 'block';
+                });
+                
             } else {
-                document.getElementById('selectAllBox').style.display = 'none';
-                document.getElementById('adjustSelectedButton').style.display = 'none';
+                document.querySelector('label[for="selectAll"]').style.display = 'none';
+                Array.from(document.getElementsByClassName('adjustSelectedButton')).forEach(button => {
+                    button.style.display = 'none';
+                });
+                
             }
 
-            document.getElementById('categoryFilterContainer').style.marginLeft = '20px'
+            document.querySelector('label[for="categoryFilter"]').style.marginLeft = '20px';
         
             fetchCategories();
             fetchStates();
@@ -187,15 +206,18 @@ function showSection(sectionId) {
         const inventoryFilter = document.getElementById('inventory_filter');
         inventoryFilter.style.display = 'none';
     
-        document.getElementById('selectAllBox').style.display = 'none';
-        document.getElementById('viewModeFilter').style.display = 'none';
-        document.getElementById('viewMode').style.display = 'none';
-        document.getElementById('adjustSelectedButton').style.display = 'none';
-        document.getElementById('ProductIdFilter').style.display = 'none';
-        document.getElementById('OrderIdFilter').style.display = 'none';
+        Array.from(document.getElementsByClassName('adjustSelectedButton')).forEach(button => {
+            button.style.display = 'none';
+        });
+        
+        document.querySelector('label[for="selectAll"]').style.display = 'none';
+        document.querySelector('label[for="viewMode"]').style.display = 'none';
+        document.querySelector('label[for="searchProduct"]').style.display = 'none';
+        document.querySelector('label[for="searchOrder"]').style.display = 'none';
+        document.querySelector('label[for="searchInventory"]').style.display = 'none';
         document.getElementById('activeFilters').style.display = 'none';
 
-        document.getElementById('categoryFilterContainer').style.marginLeft = '20px'
+        document.querySelector('label[for="categoryFilter"]').style.marginLeft = '20px';
     }
 }
 
@@ -207,7 +229,7 @@ function resetFiltersAndViewMode() {
     // Update UI elements
     document.getElementById('viewMode').value = 'product';
     document.getElementById('categoryFilter').value = '';
-    document.getElementById('searchProductId').value = '';
+    document.getElementById('searchProduct').value = '';
     document.getElementById('stateFilter').value = '';
 }
 
@@ -253,7 +275,7 @@ document.getElementById('logoutButton').addEventListener('click', async function
             closeModal('accountModal');
             const notifButton = document.getElementById('notif_button');
             if (notifButton) {
-                notifButton.style.backgroundImage = "url('./img/bell_before.png')"; // Set the new background image
+                notifButton.style.backgroundImage = "url('./css/img/bell_before.png')"; // Set the new background image
                 notifButton.style.backgroundSize = 'contain'; // Ensure the new image fits well
                 notifButton.style.backgroundRepeat = 'no-repeat'; // Prevent repeating the image
                 notifButton.style.backgroundPosition = 'center'; // Center the new image

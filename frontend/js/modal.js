@@ -24,7 +24,11 @@ function positionModal(modal, button) {
     modal.querySelector(".modal-content").style.left = `${rect.left + window.scrollX-300}px`; // Adjust horizontally
 }
 
-function showModal(title, message) {
+function showModal(title, message, bool) {
+ 
+}
+
+function displayModal(title, count = null, message) {
     // Create the modal and overlay if they don't exist
     let modal = document.getElementById('errorModal');
     let overlay = document.getElementById('errorModal-overlay');
@@ -37,8 +41,14 @@ function showModal(title, message) {
         const modalTitle = document.createElement('h3');
         modalTitle.id = 'errorModalTitle';
 
+        const modalCount = document.createElement('h5');
+        modalCount.id = 'errorCount';
+
         const modalMessage = document.createElement('textarea');
         modalMessage.id = 'errorModalMessage';
+        modalMessage.readOnly = true;
+        modalMessage.disabled = true;
+        modalMessage.style.borderStyle = 'none';
 
         const closeButton = document.createElement('button');
         closeButton.textContent = 'Close';
@@ -50,6 +60,7 @@ function showModal(title, message) {
         });
 
         modal.appendChild(modalTitle);
+        modal.appendChild(modalCount);
         modal.appendChild(modalMessage);
         modal.appendChild(closeButton);
 
@@ -69,9 +80,16 @@ function showModal(title, message) {
 
     // Set title and message
     document.getElementById('errorModalTitle').textContent = title;
+    if (title === "Warning") {
+        document.getElementById('errorCount').textContent = count !== null 
+        ? `You have ${count} warning(s).` // Use template literals for dynamic count
+        : '';
+    } else {
+        document.getElementById('errorCount').textContent = ``;
+    }
     document.getElementById('errorModalMessage').value = message;
 
     // Show modal and overlay
     modal.style.display = 'flex';
     overlay.style.display = 'block';
-}
+    }
