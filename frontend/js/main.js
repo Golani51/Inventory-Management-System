@@ -14,6 +14,7 @@ let activeFilters = { ...DEFAULTS.filters };
 let currentViewMode = DEFAULTS.viewMode;
 let isLoggedIn = false; // Track logged-in state
 let currentSection = null; // Track current section
+let userRole;
 
 async function initializePage() {
     try {
@@ -60,6 +61,8 @@ function configureUIAfterLogin(data) {
     document.getElementById('user_info').style.display = 'block';
     document.getElementById('user_info').textContent = `Logged in as ${data.username} (${data.role})`;
 
+    userRole = data.role;
+
     // Load dropdown options and inventory
     updateStockStatus();
     fetchInventory();
@@ -101,14 +104,20 @@ function showSection(sectionId) {
             inventoryFilter.style.display = 'flex';
             inventoryFilter.style.margin = '0 auto'; // Center it horizontally
         
-            document.getElementById('selectAllBox').style.display = 'block';
             document.getElementById('viewModeFilter').style.display = 'block';
             document.getElementById('viewMode').style.display = 'block';
             document.getElementById('ProductIdFilter').style.display = 'block';
             document.getElementById('OrderIdFilter').style.display = 'none';
             document.getElementById('InventoryIdFilter').style.display = 'none';
             document.getElementById('activeFilters').style.display = 'flex';
-            document.getElementById('adjustSelectedButton').style.display = 'block';
+            
+            if (userRole === 'admin') {
+                document.getElementById('selectAllBox').style.display = 'block';
+                document.getElementById('adjustSelectedButton').style.display = 'block';
+            } else {
+                document.getElementById('selectAllBox').style.display = 'none';
+                document.getElementById('adjustSelectedButton').style.display = 'none';
+            }
         
             document.getElementById('categoryFilterContainer').style.marginLeft = '20px'
 
@@ -145,14 +154,20 @@ function showSection(sectionId) {
             inventoryFilter.style.display = 'flex';
             inventoryFilter.style.margin = '0 auto'; // Center it horizontally
         
-            document.getElementById('selectAllBox').style.display = 'block';
             document.getElementById('viewModeFilter').style.display = 'none';
             document.getElementById('viewMode').style.display = 'none';
             document.getElementById('ProductIdFilter').style.display = 'none';
             document.getElementById('OrderIdFilter').style.display = 'none';
             document.getElementById('InventoryIdFilter').style.display = 'block';
             document.getElementById('activeFilters').style.display = 'flex';
-            document.getElementById('adjustSelectedButton').style.display = 'block';
+
+            if (userRole === 'admin') {
+                document.getElementById('selectAllBox').style.display = 'block';
+                document.getElementById('adjustSelectedButton').style.display = 'block';
+            } else {
+                document.getElementById('selectAllBox').style.display = 'none';
+                document.getElementById('adjustSelectedButton').style.display = 'none';
+            }
 
             document.getElementById('categoryFilterContainer').style.marginLeft = '20px'
         
@@ -227,7 +242,8 @@ document.getElementById('logoutButton').addEventListener('click', async function
             // Reset the logged-in state
             isLoggedIn = false;
 
-            // Clear session-related UI
+            userRole = null;
+
             closeModal('accountModal');
             const notifButton = document.getElementById('notif_button');
             if (notifButton) {
