@@ -182,7 +182,7 @@ table th, table td {
 /* Order List Table Adjustment */
 .inventory-order-table th:nth-child(1),
 .inventory-order-table td:nth-child(1) {
-    width: 4%; /* Set width for Order number */
+    width: 5%; /* Set width for Order number */
 }
 
 .inventory-order-table th:nth-child(2),

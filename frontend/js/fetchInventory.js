@@ -1,6 +1,6 @@
 let inputValues = {}; // Global store for user input values
 
-document.getElementById('searchProductId').addEventListener('keypress', function (event) {
+document.getElementById('searchProduct').addEventListener('keypress', function (event) {
     if (event.key === 'Enter') {
         event.preventDefault();
         searchByProductId();
@@ -97,26 +97,26 @@ function renderGroupedByLocation(data, inventoryDiv) {
         if (userRole === 'admin') {
             dropdownHeader.innerHTML = `
                 <thead>
-                <th>Select</th>
-                <th>Inventory ID</th>
-                <th>Product Name</th>
-                <th>Item Category</th>
-                <th>Current Quantity</th>
-                <th>Max Quantity</th>
-                <th>Adjustment</th>
-                <th>Stock Status</th>
+                <th>SELECT</th>
+                <th>INVENTORY ID</th>
+                <th>PRODUCT NAME</th>
+                <th>ITEM CATEGORY</th>
+                <th>CURRENT QUANTITY</th>
+                <th>MAX QUANTITY</th>
+                <th>ADJUSTMENT</th>
+                <th>STOCK STATUS</th>
                 </thead>
             `;
         } else {
             dropdownHeader.innerHTML = `
                 <thead>
-                <th>Select</th>
-                <th>Inventory ID</th>
-                <th>Product Name</th>
-                <th>Item Category</th>
-                <th>Current Quantity</th>
-                <th>Max Quantity</th>
-                <th>Stock Status</th>
+                <th>SELECT</th>
+                <th>INVENTORY ID</th>
+                <th>PRODUCT NAME</th>
+                <th>ITEM CATEGORY</th>
+                <th>CURRENT QUANTITY</th>
+                <th>MAX QUANTITY</th>
+                <th>STOCK STATUS</th>
                 </thead>
             `;
         }
@@ -151,7 +151,7 @@ function renderGroupedByLocation(data, inventoryDiv) {
                     <td id="quantity-${item.InventoryID}">${item.quantity}</td>
                     <td id="maxQuantity-${item.InventoryID}">${item.maxqt}</td>
                     <td>
-                        <input type="number" id="adjustment-${item.InventoryID}" value="1" style="width: 50px; border-radius: 20px;">
+                        <input type="number" id="adjustment-${item.InventoryID}" value="1" style="width: 50px; border-radius: 20px; border: 1px solid black;">
                         <label>
                         <input type="radio" name="action-${item.InventoryID}" value="add" checked>
                         Add
@@ -253,26 +253,26 @@ function renderGroupedByProduct(data, inventoryDiv) {
         if (userRole === 'admin') {
             dropdownHeader.innerHTML = `
                 <thead>
-                <th>Select</th>
-                <th>Inventory ID</th>
-                <th>Location</th>
-                <th>State</th>
-                <th>Current Quantity</th>
-                <th>Max Quantity</th>
-                <th>Adjustment</th>
-                <th>Stock Status</th>
+                <th>SELECT</th>
+                <th>INVENTORY ID</th>
+                <th>LOCATION</th>
+                <th>STATE</th>
+                <th>CURRENT QUANTITY</th>
+                <th>MAX QUANTITY</th>
+                <th>ADJUSTMENT</th>
+                <th>STOCK STATUS</th>
                 </thead>
             `;
         } else {
             dropdownHeader.innerHTML = `
             <thead>
             <th>Select</th>
-            <th>Inventory ID</th>
+            <th>INVENTORY ID</th>
             <th>Location</th>
-            <th>State</th>
-            <th>Current Quantity</th>
-            <th>Max Quantity</th>
-            <th>Stock Status</th>
+            <th>STATE</th>
+            <th>CURRENT QUANTITY</th>
+            <th>MAX QUANTITY</th>
+            <th>STOCK STATUS</th>
             </thead>
         `;
         }
@@ -310,7 +310,7 @@ function renderGroupedByProduct(data, inventoryDiv) {
                         type="number" 
                         id="adjustment-${item.InventoryID}" 
                         value="${inputValues[item.InventoryID] || 1}" 
-                        style="width: 50px; border-radius: 20px;"
+                        style="width: 50px; border-radius: 20px; border: 1px solid black;"
                         oninput="inputValues[${item.InventoryID}] = this.value.trim()"
                         >      
                         <label>
@@ -348,11 +348,64 @@ function renderGroupedByProduct(data, inventoryDiv) {
     inventoryDiv.appendChild(headerTable);
 }
 
+function disableLinks() {
+    const linksToDisable = ['inventoryTab', 'ordersTab', 'chartsTab', 'auditLog'];
+
+    linksToDisable.forEach(id => {
+        const link = document.getElementById(id);
+        link.classList.add('disabled'); // Add a disabled class for styling
+        link.onclick = (e) => e.preventDefault(); // Prevent clicking
+    });
+}
+
+function enableLinks() {
+    const linksToEnable = ['inventoryTab', 'ordersTab', 'chartsTab', 'auditLog'];
+
+    linksToEnable.forEach(id => {
+        const link = document.getElementById(id);
+        link.classList.remove('disabled'); // Remove the disabled class
+        link.onclick = null; // Remove the preventDefault handler
+    });
+}
+
 async function adjustSelectedItems() {
+    var errorCount = 0;
+
     const selectedCheckboxes = document.querySelectorAll('.item-checkbox:checked'); // Get all selected checkboxes
+    const adjButton = document.querySelector(".adjustSelectedButton");
+
+    adjButton.blur();
+    adjButton.disabled = true;
+    document.getElementById('notif_button').disabled = true;
+    document.getElementById('acc_button').disabled = true;
+    disableLinks();
 
     if (selectedCheckboxes.length === 0) {
-        showModal('Warning', 'No items selected.');
+        errorCount++;
+        // Add error class
+        adjButton.classList.add('error');
+
+        // Reset and trigger animation
+        adjButton.classList.remove('animate');
+        void adjButton.offsetWidth; // Trigger reflow to restart animation
+        adjButton.classList.add('animate');
+
+        setTimeout(() => {
+            adjButton.classList.remove('animate');
+            adjButton.classList.remove('error');
+            adjButton.disabled = false;
+            document.getElementById('notif_button').disabled = false;
+            document.getElementById('acc_button').disabled = false;
+            enableLinks();
+
+            displayModal('WARNING', errorCount, 'No items were selected.');
+            document.getElementById('errorModal').style.height = '205px';
+            document.getElementById('errorModalMessage').style.marginTop = '-10px';
+            document.getElementById('errorModalMessage').style.marginBottom = '-5px';
+            document.getElementById('errorModalMessage').style.marginLeft = '0px';
+            document.getElementById('errorModalMessage').style.textAlign = 'center';
+        }, 3400);
+        
         return;
     }
 
@@ -366,7 +419,8 @@ async function adjustSelectedItems() {
 
         // Validation: Check if adjustment value is valid
         if (isNaN(adjustmentValue) || adjustmentValue <= 0) {
-            errorMessages.push(`Invalid adjustment value for Inventory ID ${inventoryID}. Please enter a positive number.`);
+            errorMessages.push(`Invalid adjustment value for Inventory ID ${inventoryID}.`);
+            errorCount ++;
             return;
         }
 
@@ -380,12 +434,14 @@ async function adjustSelectedItems() {
 
         // Validation: Ensure the new quantity is within valid limits
         if (newQuantity > maxQuantity) {
-            errorMessages.push(`Cannot exceed MaxQuantity for Inventory ID ${inventoryID}. MaxQuantity is ${maxQuantity}.`);
+            errorMessages.push(`Cannot exceed Max Quantity for Inventory ID ${inventoryID}.`);
+            errorCount ++;
             return;
         }
 
         if (newQuantity < 0) {
             errorMessages.push(`Quantity cannot be less than 0 for Inventory ID ${inventoryID}.`);
+            errorCount ++;
             return;
         }
 
@@ -398,7 +454,65 @@ async function adjustSelectedItems() {
 
     // If there are validation errors, show them in the modal
     if (errorMessages.length > 0) {
-        showModal('Warning', errorMessages.join('\n'));
+        // Add error class
+        adjButton.classList.add('error');
+
+        // Reset and trigger animation
+        adjButton.classList.remove('animate');
+        void adjButton.offsetWidth; // Trigger reflow to restart animation
+        adjButton.classList.add('animate');
+
+        setTimeout(() => {
+            adjButton.classList.remove('animate');
+            adjButton.classList.remove('error');
+            adjButton.disabled = false;
+            document.getElementById('notif_button').disabled = false;
+            document.getElementById('acc_button').disabled = false;
+            enableLinks();
+
+            displayModal('WARNING', errorCount, errorMessages.join('\n'));
+            document.getElementById('errorModal').style.height = '335px';
+            document.getElementById('errorModalMessage').style.marginTop = '-13px';
+            document.getElementById('errorModalMessage').style.marginBottom = '-5px';
+            document.getElementById('errorModalMessage').style.textAlign = 'left';
+
+            const modalMessage = document.getElementById('errorModalMessage');
+            const modal = document.getElementById('errorModal');
+
+            // Dynamically calculate the margin-left based on the longest string
+            const fontStyle = window.getComputedStyle(modalMessage).font;
+            const longestLineWidth = calculateLongestLineWidth(modalMessage.value, fontStyle);
+
+            // Adjust the margin-left dynamically
+            document.getElementById('errorModalMessage').style.marginLeft = `${Math.max(0, ((modal.offsetWidth - longestLineWidth) / 2) - 15)}px`;
+
+            // Adjust the heigh case by case
+            if (errorCount <= 8) {
+                if (errorCount === 1) {
+                   document.getElementById('errorModal').style.height = '205px';
+                   document.getElementById('errorModalMessage').style.marginLeft = '0px';
+                   document.getElementById('errorModalMessage').style.textAlign = 'center';
+
+                } else if (errorCount === 2) {
+                    document.getElementById('errorModal').style.height = '225px';
+                } else if (errorCount === 3) {
+                    document.getElementById('errorModal').style.height = '240px';
+                } else if (errorCount === 4) {
+                    document.getElementById('errorModal').style.height = '260px';
+                } else if (errorCount === 5) {
+                    document.getElementById('errorModal').style.height = '280px';
+                } else if (errorCount === 6) {
+                    document.getElementById('errorModal').style.height = '300px';
+                } else if (errorCount === 7) {
+                    document.getElementById('errorModal').style.height = '320px';
+                } else if (errorCount === 8) {
+                    document.getElementById('errorModal').style.height = '335px';
+                }
+            } else {
+                document.getElementById('errorModalMessage').style.marginLeft = '0px';
+            }
+
+        }, 3400);
         return;
     }
 
@@ -411,7 +525,35 @@ async function adjustSelectedItems() {
         });
 
         if (response.ok) {
-            alert('Quantities adjusted successfully.');
+            // Add error class
+            adjButton.classList.add('success');
+
+            // Reset and trigger animation
+            adjButton.classList.remove('animate');
+            void adjButton.offsetWidth; // Trigger reflow to restart animation
+
+            setTimeout(() => {
+                adjButton.classList.add('success-bg'); // Clean up after animation
+            }, 2500);
+            adjButton.classList.add('animate');
+
+            setTimeout(() => {
+                adjButton.classList.remove('success-bg');
+                adjButton.classList.remove('animate');
+                adjButton.classList.remove('success');
+                adjButton.disabled = false;
+                document.getElementById('notif_button').disabled = false;
+                document.getElementById('acc_button').disabled = false;
+                enableLinks();
+    
+                displayModal('SUCCESS', errorCount, 'Quantities adjusted successfully.');
+                document.getElementById('errorModalMessage').style.marginTop = '-25px';
+                document.getElementById('errorModal').style.height = '175px';
+                document.getElementById('errorModalMessage').style.marginBottom = '-5px';
+                document.getElementById('errorModalMessage').style.marginLeft = '0px';
+                document.getElementById('errorModalMessage').style.textAlign = 'center';
+            }, 3000);
+
             // Update stock statuses
             await updateStockStatus();
             await fetchInventory();
@@ -422,83 +564,81 @@ async function adjustSelectedItems() {
             }
         } else {
             const error = await response.json();
-            showModal('Warning', `Error: ${error.error}`);
+            // Add error class
+            adjButton.classList.add('error');
+
+            // Reset and trigger animation
+            adjButton.classList.remove('animate');
+            void adjButton.offsetWidth; // Trigger reflow to restart animation
+            adjButton.classList.add('animate');
+
+            setTimeout(() => {
+                adjButton.classList.remove('animate');
+                adjButton.classList.remove('error');
+                adjButton.disabled = false;
+                document.getElementById('notif_button').disabled = false;
+                document.getElementById('acc_button').disabled = false;
+                enableLinks();
+
+                displayModal('WARNING', `Error: ${error.error}`);
+                document.getElementById('errorModal').style.height = '205px';
+                document.getElementById('errorModalMessage').style.marginTop = '-10px';
+                document.getElementById('errorModalMessage').style.marginBottom = '-5px';
+                document.getElementById('errorModalMessage').style.marginLeft = '0px';
+                document.getElementById('errorModalMessage').style.textAlign = 'center';
+            }, 3400);
         }
+
     } catch (error) {
-        showModal('Warning', 'Error adjusting quantities.');
-        console.error(error);
+        // Add error class
+        adjButton.classList.add('error');
+
+        // Reset and trigger animation
+        adjButton.classList.remove('animate');
+        void adjButton.offsetWidth; // Trigger reflow to restart animation
+        adjButton.classList.add('animate');
+
+        setTimeout(() => {
+            adjButton.classList.remove('animate');
+            adjButton.classList.remove('error');
+            adjButton.disabled = false;
+            document.getElementById('notif_button').disabled = false;
+            document.getElementById('acc_button').disabled = false;
+            enableLinks();
+            
+            displayModal('WARNING', 'Error adjusting quantities.');
+            document.getElementById('errorModal').style.height = '205px';
+            document.getElementById('errorModalMessage').style.marginTop = '-10px';
+            document.getElementById('errorModalMessage').style.marginBottom = '-5px';
+            document.getElementById('errorModalMessage').style.marginLeft = '0px';
+            document.getElementById('errorModalMessage').style.textAlign = 'center';
+        }, 3400);
     }
 }
 
-// Get Orders and OrderDetails tables from backend to display order list
-async function fetchOrders() {
-    try {
-        const response = await fetch('/Orders');
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+// Helper function to adjust margin left depends on the longest string line.
+function calculateLongestLineWidth(text, fontStyle) {
+    // Create a hidden span element to measure text width
+    const span = document.createElement('span');
+    span.style.visibility = 'hidden';
+    span.style.whiteSpace = 'nowrap';
+    span.style.position = 'absolute';
+    span.style.font = fontStyle;
 
-        const data = await response.json();
-        const ordersDiv = document.getElementById('orders_table');
+    // Append to body, calculate width, then remove it
+    document.body.appendChild(span);
 
-        ordersDiv.innerHTML = '';
+    // Split text into lines and find the longest one
+    const lines = text.split('\n');
+    let maxWidth = 0;
 
-        // Create the table
-        const table = document.createElement('table');
-        table.setAttribute('border', '1');
-        table.style.width = '100%';
-        table.style.borderCollapse = 'collapse';
-        table.className = 'order-table-header';
+    lines.forEach(line => {
+        span.textContent = line;
+        maxWidth = Math.max(maxWidth, span.offsetWidth);
+    });
 
-        // Table Header
-        const headerRow = document.createElement('tr');
-        headerRow.innerHTML = `
-            <th>Order List</th>
-        `;
-        table.appendChild(headerRow);
-
-        const dropdownTable = document.createElement('table');
-        dropdownTable.style.width = '100%';
-        dropdownTable.setAttribute('border', '1');
-        dropdownTable.className = 'inventory-order-table';
-
-        const tableMenu = document.createElement('tr');
-        tableMenu.innerHTML = `
-                <th>Order Number</th>
-                <th>Ordered Item</th>
-                <th>Item Cateogory</th>
-                <th>Supplier</th>
-                <th>Quantity</th>
-                <th>Unit Price</th>
-                <th>Total Amount</th>
-                <th>Requester</th>
-                <th>Requested Date</th>
-                <th>Assigned Location</th>
-        `;
-        dropdownTable.appendChild(tableMenu);
-       
-        data.forEach(order => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${order.OrderID}</td>
-                <td>${order.ProductName}</td>
-                <td>${order.Category}</td>
-                <td>${order.SupplierName}</td>
-                <td>${order.Quantity}</td>
-                <td>${order.UnitPrice}</td>
-                <td>${order.TotalAmount}</td>
-                <td>${order.FirstName} ${order.LastName}</td>
-                <td>${order.OrderDate}</td>
-                <td>${order.AssignedLocation}, ${order.LocationState}</td>
-            `;
-            dropdownTable.appendChild(row);
-        });
-
-        ordersDiv.appendChild(table);
-        ordersDiv.appendChild(dropdownTable);
-
-    } catch (error) {
-        const ordersDiv = document.getElementById('orders_table');
-        ordersDiv.textContent = 'Error loading orders.';
-    }
+    document.body.removeChild(span);
+    return maxWidth;
 }
 
 async function updateStockStatus() {
@@ -543,11 +683,11 @@ function showLowStockNotification() {
     stripe.style.position = 'absolute';
     stripe.style.top = '0';
     stripe.style.left = '0';
-    stripe.style.width = '5px';
+    stripe.style.width = '60px';
     stripe.style.height = '100%';
-    stripe.style.backgroundColor = 'red';
-    stripe.style.borderTopLeftRadius = '10px';
-    stripe.style.borderBottomLeftRadius = '10px';
+    stripe.style.backgroundColor = '#ea4f5e';
+    stripe.style.borderTopLeftRadius = '6px';
+    stripe.style.borderBottomLeftRadius = '6px';
 
     // Append the stripe to the modal
     notif.appendChild(stripe);
@@ -555,15 +695,16 @@ function showLowStockNotification() {
     const icon = document.createElement('span');
     icon.className = 'material-symbols-outlined';
     icon.textContent = 'info';
-    icon.style.color = 'red';
+    icon.style.color = '#ffffff';
     icon.style.fontSize = '24px'; 
+    icon.style.zIndex = '10';
 
     // Create a clickable element
     const link = document.createElement('a');
     link.textContent = 'You have low stock items!';
     link.href = 'javascript:void(0)';
     link.style.textDecoration = 'none';
-    link.style.color = 'red';
+    link.style.color = '#878787';
     link.addEventListener('click', () => {
         closeModal('notificationsModal');
         showSection('short_list');
@@ -586,29 +727,30 @@ function hideLowStockNotification() {
 
     // Create the stripe element
     const stripe = document.createElement('div');
-    stripe.className = 'modal-stripe'; // Add a class for styling (optional)
+    stripe.className = 'modal-stripe';
 
     // Apply the styles directly
     stripe.style.position = 'absolute';
     stripe.style.top = '0';
     stripe.style.left = '0';
-    stripe.style.width = '5px'; // Adjust the stripe width
-    stripe.style.height = '100%'; // Make it span the full height of the modal
-    stripe.style.backgroundColor = 'blue'; // Set the stripe color
-    stripe.style.borderTopLeftRadius = '10px'; // Match the modal's border radius
-    stripe.style.borderBottomLeftRadius = '10px'; // Match the modal's border radius
+    stripe.style.width = '60px';
+    stripe.style.height = '100%';
+    stripe.style.backgroundColor = '#678f64';
+    stripe.style.borderTopLeftRadius = '6px';
+    stripe.style.borderBottomLeftRadius = '6px';
 
     // Append the stripe to the modal
     notif.appendChild(stripe);
 
     const icon = document.createElement('span');
     icon.className = 'material-symbols-outlined';
-    icon.textContent = 'info';
-    icon.style.color = 'blue';
-    icon.style.fontSize = '24px'; 
+    icon.textContent = 'check_circle';
+    icon.style.color = '#ffffff';
+    icon.style.fontSize = '24px';
+    icon.style.zIndex = '10';
 
-    // Create a clickable element
     const text = document.createElement('p');
+    text.style.color = '#878787';
     text.textContent = 'You don\'t have any low stock item(s).'; 
 
     notif.appendChild(icon);

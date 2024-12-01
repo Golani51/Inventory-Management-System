@@ -184,28 +184,28 @@ function renderShorts(data, container) {
 
     if (userRole === 'admin') {
         dropdownHeader.innerHTML = `
-        <th>Select</th>
-        <th>Inventory ID</th>
-        <th>Product Name</th>
-        <th>Category</th>
-        <th>Location</th>
-        <th>State</th>
-        <th>Current Quantity</th>
-        <th>Max Quantity</th>
-        <th>Adjustment</th>
-        <th>Stock Status</th>
+        <th>SELECT</th>
+        <th>INVENTORY ID</th>
+        <th>PRODUCT NAME</th>
+        <th>CATEGORY</th>
+        <th>LOCATION</th>
+        <th>STATE</th>
+        <th>CURRENT QUANTITY</th>
+        <th>MAX QUANTITY</th>
+        <th>ADJUSTMENT</th>
+        <th>STOCK STATUS</th>
     `;
     } else {
         dropdownHeader.innerHTML = `
-        <th>Select</th>
-        <th>Inventory ID</th>
-        <th>Product Name</th>
-        <th>Category</th>
-        <th>Location</th>
-        <th>State</th>
-        <th>Current Quantity</th>
-        <th>Max Quantity</th>
-        <th>Stock Status</th>
+        <th>SELECT</th>
+        <th>INVENTORY ID</th>
+        <th>PRODUCT NAME</th>
+        <th>CATEGORY</th>
+        <th>LOCATION</th>
+        <th>STATE</th>
+        <th>CURRENT QUANTITY</th>
+        <th>MAX QUANTITY</th>
+        <th>STOCK STATUS</th>
     `;
     }
 
@@ -244,7 +244,7 @@ function renderShorts(data, container) {
                 type="number" 
                 id="adjustment-${item.InventoryID}" 
                 value="${inputValues[item.InventoryID] || 1}" 
-                style="width: 50px; border-radius: 20px;"
+                style="width: 50px; border-radius: 20px; border: 1px solid black;"
                 oninput="inputValues[${item.InventoryID}] = this.value.trim()"
                 >                    
                 <label>
@@ -306,16 +306,16 @@ function renderOrders(data, container) {
 
     const headerRow = document.createElement('tr');
     headerRow.innerHTML = `
-        <th>Order Number</th>
-        <th>Ordered Item</th>
-        <th>Item Category</th>
-        <th>Supplier</th>
-        <th>Quantity</th>
-        <th>Unit Price</th>
-        <th>Total Amount</th>
-        <th>Requester</th>
-        <th>Requested Date</th>
-        <th>Assigned Location</th>
+        <th>ORDER NUMBER</th>
+        <th>ORDERED ITEM</th>
+        <th>ITEM CATEGORY</th>
+        <th>SUPPLIER</th>
+        <th>QUANTITY</th>
+        <th>UNIT PRICE</th>
+        <th>TOTAL AMOUNT</th>
+        <th>REQUESTER</th>
+        <th>REQUESTED DATE</th>
+        <th>ASSIGNED LOCATION</th>
     `;
     table.appendChild(headerRow);
 
@@ -327,8 +327,8 @@ function renderOrders(data, container) {
             <td>${order.Category}</td>
             <td>${order.SupplierName}</td>
             <td>${order.Quantity}</td>
-            <td>${order.UnitPrice}</td>
-            <td>${order.TotalAmount}</td>
+            <td>$${order.UnitPrice}</td>
+            <td>$${order.TotalAmount}</td>
             <td>${order.FirstName} ${order.LastName}</td>
             <td>${order.OrderDate}</td>
             <td>${order.AssignedLocation}, ${order.LocationState}</td>
@@ -355,7 +355,7 @@ async function filterInventoryByState() {
 }
 
 async function searchByProductId() {
-    const productId = document.getElementById('searchProductId').value.trim();
+    const productId = document.getElementById('searchProduct').value.trim();
     if (!productId) {
         alert('Please enter a ProductID to search.');
         return;
@@ -367,7 +367,7 @@ async function searchByProductId() {
 }
 
 async function searchByOrderId() {
-    const orderId = document.getElementById('searchOrderId').value.trim();
+    const orderId = document.getElementById('searchOrder').value.trim();
     if (!orderId) {
         alert('Please enter an OrderID to search.');
         return;
@@ -379,8 +379,8 @@ async function searchByOrderId() {
 }
 
 async function searchByInventoryId() {
-    const orderId = document.getElementById('searchInventoryId').value.trim();
-    if (!orderId) {
+    const inventoryId = document.getElementById('searchInventory').value.trim();
+    if (!inventoryId) {
         alert('Please enter an Inventory to search.');
         return;
     }
@@ -414,9 +414,9 @@ function renderActiveFilters() {
         // Reset all filter inputs
         document.getElementById('categoryFilter').value = '';
         document.getElementById('stateFilter').value = '';
-        document.getElementById('searchProductId').value = '';
-        document.getElementById('searchOrderId').value = '';
-        document.getElementById('searchInventoryId').value = '';
+        document.getElementById('searchProduct').value = '';
+        document.getElementById('searchOrder').value = '';
+        document.getElementById('searchInventory').value = '';
 
         renderActiveFilters(); // Update filter boxes
         fetchFilteredInventory();
@@ -451,7 +451,7 @@ function renderActiveFilters() {
         hasActiveFilters = true;
         const productIdFilter = createFilterBox('ProductID', activeFilters.productId, () => {
             activeFilters.productId = null; // Remove ProductID filter
-            document.getElementById('searchProductId').value = ''; // Clear input
+            document.getElementById('searchProduct').value = ''; // Clear input
             fetchFilteredInventory(); // Reload inventory
         });
         filterContainer.appendChild(productIdFilter);
@@ -461,7 +461,7 @@ function renderActiveFilters() {
         hasActiveFilters = true;
         const orderIdFilter = createFilterBox('OrderID', activeFilters.orderId, () => {
             activeFilters.orderId = null; // Remove OrderID filter
-            document.getElementById('searchOrderId').value = ''; // Clear input
+            document.getElementById('searchOrder').value = ''; // Clear input
             fetchFilteredInventory(); // Reload inventory
         });
         filterContainer.appendChild(orderIdFilter);
@@ -469,12 +469,12 @@ function renderActiveFilters() {
 
     if (activeFilters.inventoryId) {
         hasActiveFilters = true;
-        const orderIdFilter = createFilterBox('InventoryID', activeFilters.orderId, () => {
-            activeFilters.orderId = null; // Remove OrderID filter
-            document.getElementById('searchInventoryId').value = ''; // Clear input
+        const inventoryIdFilter = createFilterBox('InventoryID', activeFilters.inventoryId, () => {
+            activeFilters.inventoryId = null; // Remove OrderID filter
+            document.getElementById('searchInventory').value = ''; // Clear input
             fetchFilteredInventory(); // Reload inventory
         });
-        filterContainer.appendChild(orderIdFilter);
+        filterContainer.appendChild(inventoryIdFilter);
     }
 
     // Show or hide the "Clear All" button based on active filters
@@ -561,9 +561,3 @@ function resetSelectAllCheckbox() {
     }
     isSelectAllChecked = false;
 }
-
-// Align ActiveFilters on page load
-document.addEventListener('DOMContentLoaded', alignActiveFilters);
-
-// Align ActiveFilters on window resize (to handle responsive changes)
-window.addEventListener('resize', alignActiveFilters);
