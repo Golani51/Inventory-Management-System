@@ -21,9 +21,9 @@
             <div class="navbar-header">
                 <span class="navbar-brand">INVENTORY MANAGEMENT</span>
                 <ul class="navbar-menu" id="menu-bar">
-                    <li><a href="javascript:void(0)" onclick="showSection('inventory_list')">Inventory</a></li>
-                    <li><a href="javascript:void(0)" onclick="showSection('orders_section')">Orders</a></li>
-                    <li><a href="javascript:void(0)" onclick="showSection('')">Chart</a></li>
+                    <li><a href="javascript:void(0)" onclick="showSection('inventory_list')" id="inventoryTab">Inventory</a></li>
+                    <li><a href="javascript:void(0)" onclick="showSection('orders_section')" id="ordersTab">Orders</a></li>
+                    <li><a href="javascript:void(0)" onclick="showSection('')" id="chartsTab">Chart</a></li>
                     <li><a href="javascript:void(0)" onclick="showSection('')" id="auditLog">AuditLogs</a></li>
                 </ul>
                 <div class="navbar-right">
@@ -43,13 +43,13 @@
         <div id="login_section">
             <form id="loginForm">
                 <label for="username">Username:</label>
-                <input type="text" id="username" name="username" required autocomplete="off"><br>
+                <input type="username" id="username" name="username" required autocomplete="off"><br>
                 <label for="password">Password:</label>
                 <input type="password" id="password" name="password" required autocomplete="off"><br>
-                <button type="submit">Login</button>
-                <p id="loginNotif"></p>
+                <button type="submit" id="loginButton">Login</button>
             </form>
         </div>
+        <p id="loginNotif"></p>
 
         <!-- Filter Section -->
         <div id="inventory_filter">
@@ -117,6 +117,7 @@
 
         <div id="notificationsModal" class="modal">
             <div class="modal-overlay" onclick="toggleModal('notificationsModal')"></div>
+            <div class="modal-triangle"></div>
             <div class="modal-content">
                 <span class="close" onclick="toggleModal('notificationsModal')">&times;</span>
                 <p id="notif"> 
@@ -127,6 +128,7 @@
     
         <div id="accountModal" class="modal">
             <div class="modal-overlay" onclick="toggleModal('accountModal')"></div>
+            <div class="modal-triangle"></div>
             <div class="modal-content">
                 <span class="close" onclick="toggleModal('accountModal')">&times;</span>
                 <p id="user_greeting" style="display: none;"></p>

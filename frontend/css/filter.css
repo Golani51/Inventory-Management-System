@@ -55,6 +55,10 @@ label[for="searchProduct"] {
     margin-left: 20px;
 }
 
+label[for="searchOrder"] {
+    margin-left: 20px;
+}
+
 label[for="searchInventory"] {
     margin-left: 20px;
 }

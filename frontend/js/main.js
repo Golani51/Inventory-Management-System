@@ -39,13 +39,12 @@ function hideRestrictedSections() {
         if (section) section.style.display = 'none';
     });
 
-    document.getElementById('loginForm').style.display = 'block';
+    document.getElementById('login_section').style.display = 'flex';
     document.getElementById('inventory_filter').style.display = 'none';
-    document.getElementById('notif').textContent = `You need to login.`;
     document.getElementById('logoutButton').style.display = 'none';
     document.getElementById('user_info').style.display = 'none';
-    document.getElementById('user_greeting').style.display = 'block';
-    document.getElementById('user_greeting').textContent = `You need to login.`;
+    document.getElementById('user_greeting').style.display = 'none';
+    document.getElementById('auditLog').style.display = 'none';
     Array.from(document.getElementsByClassName('adjustSelectedButton')).forEach(button => {
         button.style.display = 'none';
     });
@@ -56,11 +55,15 @@ function configureUIAfterLogin(data) {
     isLoggedIn = true; // Update the logged-in state
 
     // Display user information
-    document.getElementById('loginForm').style.display = 'none';
+    document.getElementById('login_section').style.display = 'none';
     document.getElementById('logoutButton').style.display = 'inline';
+    document.getElementById('logoutButton').style.marginLeft = '60px';
     document.getElementById('user_greeting').style.display = 'block';
+    document.getElementById('user_greeting').style.marginLeft = '60px';
     document.getElementById('user_greeting').textContent = `Hello! ${data.firstname}`;
     document.getElementById('user_info').style.display = 'block';
+    document.getElementById('user_info').style.marginLeft = '60px';
+    document.getElementById('user_info').style.color = '#878787';
     document.getElementById('user_info').textContent = `Logged in as ${data.username} (${data.role})`;
 
     userRole = data.role;
@@ -80,7 +83,6 @@ function configureUIAfterLogin(data) {
         button.style.display = 'block';
     });
     
-
     // Show the inventory section by default
     showSection('inventory_list');
 }
@@ -179,7 +181,6 @@ function showSection(sectionId) {
             document.querySelector('label[for="searchInventory"]').style.display = 'block';
             document.getElementById('activeFilters').style.display = 'flex';
 
-
             if (userRole === 'admin') {
                 document.querySelector('label[for="selectAll"]').style.display = 'block';
                 Array.from(document.getElementsByClassName('adjustSelectedButton')).forEach(button => {
@@ -254,7 +255,7 @@ function login(){
                 const data = await response.json();
                 configureUIAfterLogin(data);
             } else {
-                alert('Login failed. Please check your credentials.');
+                loginNotif.textContent = 'Login failed. Please check your credentials.';
             }
         } catch (error) {
             console.error('Error during login:', error);
