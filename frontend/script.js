@@ -543,6 +543,7 @@ function chartBuilder() {
     google.charts.setOnLoadCallback(drawOrderChart);
 
     drawOrderChart();
+    loadAndRenderPieChart();
 }
 
 // Helper function for chartBuilder function
@@ -595,6 +596,41 @@ function drawOrderChart() {
     .catch(error => {
       console.error('Error fetching order data:', error);
       document.getElementById('google_chart').innerText = 'Error loading chart';
+    });
+}
+
+function loadAndRenderPieChart() {
+    // Load the Google Charts library
+    google.charts.load('current', { packages: ['corechart'] });
+
+    // Set a callback to draw the pie chart after the library is loaded
+    google.charts.setOnLoadCallback(async () => {
+        try {
+            // Fetch the data for the pie chart
+            const response = await fetch('/chart-data-pie');
+            const chartData = await response.json();
+
+            // Convert the fetched data to a DataTable format
+            const data = google.visualization.arrayToDataTable(chartData);
+
+            // Define chart options
+            const options = {
+                title: 'Items Ordered by Product',
+                is3D: true,
+                width: 800,
+                height: 600,
+            };
+
+            // Render the pie chart
+            const chart = new google.visualization.PieChart(
+                document.getElementById('pie-chart')
+            );
+            chart.draw(data, options);
+        } catch (error) {
+            console.error('Error rendering pie chart:', error);
+            document.getElementById('pie-chart').textContent =
+                'Error loading pie chart. Please try again.';
+        }
     });
 }
 

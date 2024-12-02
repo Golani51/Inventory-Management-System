@@ -263,5 +263,38 @@ def fetch_chart_data():
     finally:
         conn.close()
 
+@app.route('/chart-data-pie', methods=['GET'])
+def fetch_pie_chart_data():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        # Query to calculate total ordered quantity for each product
+        query = """
+            SELECT 
+                p.ProductName AS product,
+                SUM(od.Quantity) AS total_quantity
+            FROM OrderDetails od
+            LEFT JOIN Products p ON od.ProductID = p.ProductID
+            GROUP BY p.ProductName
+            ORDER BY total_quantity DESC;
+        """
+        cursor.execute(query)
+        results = cursor.fetchall()
+
+        # Transform the data into a format suitable for Google Charts
+        chart_data = [["Product", "Total Quantity"]]
+        for row in results:
+            chart_data.append([row['product'], float(row['total_quantity'])])
+
+        return jsonify(chart_data), 200
+
+    except Exception as e:
+        print("Error fetching pie chart data:", e)
+        return jsonify({"error": "Error fetching pie chart data"}), 500
+
+    finally:
+        conn.close()
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=4000)
