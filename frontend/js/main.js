@@ -48,6 +48,10 @@ function hideRestrictedSections() {
     Array.from(document.getElementsByClassName('adjustSelectedButton')).forEach(button => {
         button.style.display = 'none';
     });
+
+    Array.from(document.getElementsByClassName('revertOrderButton')).forEach(button => {
+        button.style.display = 'none';
+    });
 }
 
 // Show restricted sections and configure the UI after login
@@ -99,7 +103,7 @@ function showSection(sectionId) {
         return;
     }
 
-    const sections = document.querySelectorAll('#inventory_list, #orders_section, #short_list');
+    const sections = document.querySelectorAll('#inventory_list, #orders_section, #short_list, #chart_section');
     sections.forEach(section => section.style.display = 'none');
 
     const section = document.getElementById(sectionId);
@@ -190,8 +194,6 @@ function showSection(sectionId) {
                 Array.from(document.getElementsByClassName('revertOrderButton')).forEach(button => {
                     button.style.display = 'none';
                 });
-
-                //table.classList.remove('alternate-style');
             }
             
             document.querySelector('label[for="categoryFilter"]').style.marginLeft = '20px';
@@ -240,7 +242,21 @@ function showSection(sectionId) {
             resetFiltersAndViewMode();
             renderActiveFilters();
             fetchFilteredInventory();
+            
+        } else if (sectionId === 'chart_section'){
+            document.getElementById('inventory_filter').style.display = 'none';
+
+            Array.from(document.getElementsByClassName('revertOrderButton')).forEach(button => {
+                button.style.display = 'none';
+            });
+
+            Array.from(document.getElementsByClassName('adjustSelectedButton')).forEach(button => {
+                button.style.display = 'none';
+            });
+
+            chartBuilder();
         }
+
     } else {
         const inventoryFilter = document.getElementById('inventory_filter');
         inventoryFilter.style.display = 'none';

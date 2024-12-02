@@ -36,8 +36,7 @@ def check_session():
         return jsonify({"error": "Not logged in"}), 401
 
 # Log to audit file
-def log_action():
-    action = request.json
+def log_action(action):
     logFile = open("log.txt","a")
     currentDate = datetime.now()
     print(str(currentDate) + ": ", logFile)
@@ -568,6 +567,116 @@ def get_batch_order_details():
         return jsonify({"error": "Internal server error", "details": str(e)}), 500
     finally:
         cursor.close()
+        conn.close()
+
+# Endpoint to fetch order data for Google Chart
+@app.route('/chart-data', methods=['GET'])
+def fetch_chart_data():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        # Query to get aggregated order data
+        query = """
+            SELECT 
+                e.FirstName, 
+                e.LastName, 
+                p.ProductName, 
+                SUM(od.Quantity) AS TotalQuantity
+            FROM Orders o
+            LEFT JOIN OrderDetails od ON o.OrderID = od.OrderID
+            LEFT JOIN Products p ON od.ProductID = p.ProductID
+            LEFT JOIN Employees e ON o.EmployeeID = e.EmployeeID
+            GROUP BY e.EmployeeID, p.ProductName
+            ORDER BY e.FirstName, e.LastName, p.ProductName;
+        """
+        cursor.execute(query)
+        results = cursor.fetchall()
+
+        # Transform data for Google Charts (as a list of lists)
+        chart_data = [["Employee", "Product", "Total Quantity"]]
+        for row in results:
+            chart_data.append([
+                f"{row['FirstName']} {row['LastName']}", 
+                row['ProductName'], 
+                row['TotalQuantity']
+            ])
+
+        return jsonify(chart_data), 200
+
+    except Exception as e:
+        print("Error fetching chart data:", e)
+        return jsonify({"error": "Error fetching chart data"}), 500
+
+    finally:
+        conn.close()
+
+# pie chart function
+@app.route('/chart-data-pie', methods=['GET'])
+def fetch_pie_chart_data():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        # Query to calculate total ordered quantity for each product
+        query = """
+            SELECT 
+                p.ProductName AS product,
+                SUM(od.Quantity) AS total_quantity
+            FROM OrderDetails od
+            LEFT JOIN Products p ON od.ProductID = p.ProductID
+            GROUP BY p.ProductName
+            ORDER BY total_quantity DESC;
+        """
+        cursor.execute(query)
+        results = cursor.fetchall()
+
+        # Transform the data into a format suitable for Google Charts
+        chart_data = [["Product", "Total Quantity"]]
+        for row in results:
+            chart_data.append([row['product'], float(row['total_quantity'])])
+
+        return jsonify(chart_data), 200
+
+    except Exception as e:
+        print("Error fetching pie chart data:", e)
+        return jsonify({"error": "Error fetching pie chart data"}), 500
+
+    finally:
+        conn.close()
+
+# trend line graph function
+@app.route('/chart-data-monthly-orders', methods=['GET'])
+def fetch_monthly_order_data():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        # Query to calculate total orders per month
+        query = """
+            SELECT 
+                DATE_FORMAT(OrderDate, '%Y-%m') AS month,
+                COUNT(OrderID) AS total_orders
+            FROM Orders
+            WHERE OrderDate >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
+            GROUP BY DATE_FORMAT(OrderDate, '%Y-%m')
+            ORDER BY DATE_FORMAT(OrderDate, '%Y-%m');
+        """
+        cursor.execute(query)
+        results = cursor.fetchall()
+
+        # Transform the data into a format suitable for Google Charts
+        chart_data = [["Month", "Total Orders"]]
+        for row in results:
+            chart_data.append([row['month'], row['total_orders']])
+
+        return jsonify(chart_data), 200
+
+    except Exception as e:
+        print("Error fetching monthly order data:", e)
+        return jsonify({"error": "Error fetching monthly order data"}), 500
+
+    finally:
         conn.close()
 
 

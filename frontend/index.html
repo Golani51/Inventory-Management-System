@@ -23,7 +23,7 @@
                 <ul class="navbar-menu" id="menu-bar">
                     <li><a href="javascript:void(0)" onclick="showSection('inventory_list')" id="inventoryTab">Inventory</a></li>
                     <li><a href="javascript:void(0)" onclick="showSection('orders_section')" id="ordersTab">Orders</a></li>
-                    <li><a href="javascript:void(0)" onclick="showSection('')" id="chartsTab">Chart</a></li>
+                    <li><a href="javascript:void(0)" onclick="showSection('chart_section')" id="chartsTab">Chart</a></li>
                     <li><a href="javascript:void(0)" onclick="showSection('')" id="auditLog">AuditLogs</a></li>
                 </ul>
                 <div class="navbar-right">
@@ -114,6 +114,12 @@
             <div id="orders_table">Loading orders...</div>
         </div>
 
+        <div id="chart_section" style="display: none;">
+            <div id="google_chart" style="width: 800px; height: 600px;">Loading chart...</div>  
+            <div id="pie-chart" style="width: 800px; height: 600px;">Loading chart...</div>
+            <div id="monthly-order-chart" style="width: 800px; height: 500px;">Loading chart...</div>
+        </div>
+
         <!-- Low Stock List -->
         <div id="short_list" class="section-container" style="display: none;">
             Loading short list...
@@ -158,11 +164,13 @@
     </div>
 
     <!-- JavaScript Imports -->
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script src="./js/main.js"></script>
     <script src="./js/fetchInventory.js"></script>
     <script src="./js/filter.js"></script>
     <script src="./js/modal.js"></script>
     <script src="./js/revertOrder.js"></script>
+    <script src="./js/chart.js"></script>
 
 </body>
 
