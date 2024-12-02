@@ -544,6 +544,7 @@ function chartBuilder() {
 
     drawOrderChart();
     loadAndRenderPieChart();
+    loadAndRenderMonthlyOrderChart();
 }
 
 // Helper function for chartBuilder function
@@ -630,6 +631,41 @@ function loadAndRenderPieChart() {
             console.error('Error rendering pie chart:', error);
             document.getElementById('pie-chart').textContent =
                 'Error loading pie chart. Please try again.';
+        }
+    });
+}
+function loadAndRenderMonthlyOrderChart() {
+    // Load the Google Charts library
+    google.charts.load('current', { packages: ['corechart'] });
+
+    // Set a callback to draw the chart after the library is loaded
+    google.charts.setOnLoadCallback(async () => {
+        try {
+            // Fetch the data for the monthly order chart
+            const response = await fetch('/chart-data-monthly-orders');
+            const chartData = await response.json();
+
+            // Convert the fetched data to a DataTable format
+            const data = google.visualization.arrayToDataTable(chartData);
+
+            // Define chart options
+            const options = {
+                title: 'Monthly Order Trends',
+                hAxis: { title: 'Month' },
+                vAxis: { title: 'Total Orders' },
+                chartArea: { width: '70%', height: '70%' },
+                legend: { position: 'none' },
+            };
+
+            // Render the chart as a bar or line chart
+            const chart = new google.visualization.LineChart(
+                document.getElementById('monthly-order-chart')
+            );
+            chart.draw(data, options);
+        } catch (error) {
+            console.error('Error rendering monthly order chart:', error);
+            document.getElementById('monthly-order-chart').textContent =
+                'Error loading monthly order chart. Please try again.';
         }
     });
 }

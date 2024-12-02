@@ -262,7 +262,7 @@ def fetch_chart_data():
 
     finally:
         conn.close()
-
+# pie chart function
 @app.route('/chart-data-pie', methods=['GET'])
 def fetch_pie_chart_data():
     try:
@@ -295,6 +295,39 @@ def fetch_pie_chart_data():
 
     finally:
         conn.close()
+# trend line graph function
+@app.route('/chart-data-monthly-orders', methods=['GET'])
+def fetch_monthly_order_data():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
 
+        # Query to calculate total orders per month
+        query = """
+            SELECT 
+                DATE_FORMAT(OrderDate, '%Y-%m') AS month,
+                COUNT(OrderID) AS total_orders
+            FROM Orders
+            WHERE OrderDate >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
+            GROUP BY DATE_FORMAT(OrderDate, '%Y-%m')
+            ORDER BY DATE_FORMAT(OrderDate, '%Y-%m');
+        """
+        cursor.execute(query)
+        results = cursor.fetchall()
+
+        # Transform the data into a format suitable for Google Charts
+        chart_data = [["Month", "Total Orders"]]
+        for row in results:
+            chart_data.append([row['month'], row['total_orders']])
+
+        return jsonify(chart_data), 200
+
+    except Exception as e:
+        print("Error fetching monthly order data:", e)
+        return jsonify({"error": "Error fetching monthly order data"}), 500
+
+    finally:
+        conn.close()
+# main 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=4000)
