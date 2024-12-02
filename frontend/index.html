@@ -24,7 +24,7 @@
                     <li><a href="javascript:void(0)" onclick="showSection('inventory_list')" id="inventoryTab">Inventory</a></li>
                     <li><a href="javascript:void(0)" onclick="showSection('orders_section')" id="ordersTab">Orders</a></li>
                     <li><a href="javascript:void(0)" onclick="showSection('')" id="chartsTab">Chart</a></li>
-                    <li><a href="javascript:void(0)" onclick="showSection('')" id="auditLog">AuditLogs</a></li>
+                    <li><a href="javascript:void(0)" onclick="downloadAudit()" id="auditLog">AuditLogs</a></li>
                 </ul>
                 <div class="navbar-right">
                     <button class="icon-button" id="notif_button" onclick="toggleModal('notificationsModal', this)">
@@ -163,6 +163,7 @@
     <script src="./js/filter.js"></script>
     <script src="./js/modal.js"></script>
     <script src="./js/revertOrder.js"></script>
+    <script src="./js/downloadAudit.js"></script>
 
 </body>
 
