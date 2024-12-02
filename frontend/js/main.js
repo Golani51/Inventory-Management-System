@@ -68,12 +68,6 @@ function configureUIAfterLogin(data) {
 
     userRole = data.role;
 
-    if (userRole === "admin") {
-        document.getElementById('auditLog').style.display = 'block';
-    } else {
-        document.getElementById('auditLog').style.display = 'none';
-    }
-
     // Load dropdown options and inventory
     updateStockStatus();
     fetchInventory();
@@ -134,6 +128,10 @@ function showSection(sectionId) {
                 button.style.display = 'none';
             });
 
+            Array.from(document.getElementsByClassName('auditLogButton')).forEach(button => {
+                button.style.display = 'none';
+            });
+
             if (userRole === 'admin') {
                 document.getElementById('selectAllInventoryLabel').style.display = 'block';
                 Array.from(document.getElementsByClassName('adjustSelectedButton')).forEach(button => {
@@ -173,7 +171,9 @@ function showSection(sectionId) {
             Array.from(document.getElementsByClassName('adjustSelectedButton')).forEach(button => {
                 button.style.display = 'none';
             });
-
+            Array.from(document.getElementsByClassName('auditLogButton')).forEach(button => {
+                button.style.display = 'none';
+            });
             const table = document.querySelector('.inventory-order-table');
 
             if (userRole === 'admin') {
@@ -219,6 +219,9 @@ function showSection(sectionId) {
             Array.from(document.getElementsByClassName('revertOrderButton')).forEach(button => {
                 button.style.display = 'none';
             });
+            Array.from(document.getElementsByClassName('auditLogButton')).forEach(button => {
+                button.style.display = 'none';
+            });
 
             if (userRole === 'admin') {
                 document.getElementById('selectAllShortListLabel').style.display = 'block';
@@ -241,6 +244,18 @@ function showSection(sectionId) {
             renderActiveFilters();
             fetchFilteredInventory();
         }
+        else if(sectionId === "audit_section"){
+            if(userRole === 'admin'){
+                Array.from(document.getElementsByClassName('auditLogButton')).forEach(button => {
+                    button.style.display = 'block';
+                });
+            }
+            else{
+                Array.from(document.getElementsByClassName('auditLogButton')).forEach(button => {
+                    button.style.display = 'none';
+                });
+            }
+        }
     } else {
         const inventoryFilter = document.getElementById('inventory_filter');
         inventoryFilter.style.display = 'none';
@@ -251,6 +266,10 @@ function showSection(sectionId) {
 
 
         Array.from(document.getElementsByClassName('revertOrderButton')).forEach(button => {
+            button.style.display = 'none';
+        });
+
+        Array.from(document.getElementsByClassName('auditLogButton')).forEach(button => {
             button.style.display = 'none';
         });
         

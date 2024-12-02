@@ -24,7 +24,7 @@
                     <li><a href="javascript:void(0)" onclick="showSection('inventory_list')" id="inventoryTab">Inventory</a></li>
                     <li><a href="javascript:void(0)" onclick="showSection('orders_section')" id="ordersTab">Orders</a></li>
                     <li><a href="javascript:void(0)" onclick="showSection('')" id="chartsTab">Chart</a></li>
-                    <li><a href="javascript:void(0)" onclick="downloadAudit()" id="auditLog">AuditLogs</a></li>
+                    <li><a href="javascript:void(0)" onclick="showSection('')" id="auditLog">AuditLogs</a></li>
                 </ul>
                 <div class="navbar-right">
                     <button class="icon-button" id="notif_button" onclick="toggleModal('notificationsModal', this)">
@@ -114,16 +114,18 @@
             <div id="orders_table">Loading orders...</div>
         </div>
 
+        <!-- Audit Log Section -->
+        </div id = "audit_section" class="section-container" style="display: none;">
+            <!-- Download Audit Log Button -->
+            <div id="buttonContainer">
+                <button class="auditLogButton" onclick="downloadAudit()">Download Audit Log</button>
+            </div>
+        </div>
+
         <!-- Low Stock List -->
         <div id="short_list" class="section-container" style="display: none;">
             Loading short list...
         </div>
-
-        <!-- Adjust Botton -->
-        <div id="buttonContainer">
-            <button class="adjustSelectedButton" onclick="adjustSelectedItems()">Adjust Selected Items</button>
-        </div>
-
         <!-- Revert Order Botton -->
         <div id="buttonContainer">
             <button class="revertOrderButton" onclick="revertSelectedOrders()">Revert Order</button>
@@ -139,7 +141,7 @@
                         You don't have any notification(s).</p>
             </div>
         </div>
-    
+
         <div id="accountModal" class="modal">
             <div class="modal-overlay" onclick="toggleModal('accountModal')"></div>
             <div class="modal-triangle"></div>

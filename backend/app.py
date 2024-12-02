@@ -36,13 +36,12 @@ def check_session():
         return jsonify({"error": "Not logged in"}), 401
 
 # Log to audit file
-def log_action():
-    action = request.json
+def log_action(action):
     logFile = open("log.txt","a")
     currentDate = datetime.now()
-    print(str(currentDate) + ": ", logFile)
-    print(action, logFile)
-    print("\n", logFile)
+    logFile.write(str(currentDate) + ": ")
+    logFile.write(action)
+    logFile.write("\n")
     logFile.close()
 
 #Send audit log out
