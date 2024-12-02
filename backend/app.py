@@ -455,6 +455,7 @@ def update_stock_status():
         cursor.close()
         conn.close()
 
+
 @app.route('/low-stock-list', methods=['GET'])
 def get_low_stock():
     try:
