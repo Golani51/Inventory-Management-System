@@ -95,6 +95,7 @@ function renderGroupedByLocation(data, inventoryDiv) {
         const dropdownHeader = document.createElement('tr');
 
         if (userRole === 'admin') {
+            dropdownTable.classList.add('alternate-style');
             dropdownHeader.innerHTML = `
                 <thead>
                 <th>SELECT</th>
@@ -108,6 +109,7 @@ function renderGroupedByLocation(data, inventoryDiv) {
                 </thead>
             `;
         } else {
+            dropdownTable.classList.remove('alternate-style');
             dropdownHeader.innerHTML = `
                 <thead>
                 <th>INVENTORY ID</th>
@@ -131,10 +133,10 @@ function renderGroupedByLocation(data, inventoryDiv) {
 
             // Calculate stock status
             if (item.stat === 'Low') {
-                stockButton.textContent = 'Low Stock';
+                stockButton.textContent = 'Low';
                 stockButton.classList.add('low');
             } else {
-                stockButton.textContent = 'Enough Stock';
+                stockButton.textContent = 'Enough';
                 stockButton.classList.add('enough');
             }
 
@@ -249,6 +251,7 @@ function renderGroupedByProduct(data, inventoryDiv) {
         const dropdownHeader = document.createElement('tr');
 
         if (userRole === 'admin') {
+            dropdownTable.classList.add('alternate-style');
             dropdownHeader.innerHTML = `
                 <thead>
                 <th>SELECT</th>
@@ -262,10 +265,11 @@ function renderGroupedByProduct(data, inventoryDiv) {
                 </thead>
             `;
         } else {
+            dropdownTable.classList.remove('alternate-style');
             dropdownHeader.innerHTML = `
             <thead>
             <th>INVENTORY ID</th>
-            <th>Location</th>
+            <th>LOCATION</th>
             <th>STATE</th>
             <th>CURRENT QUANTITY</th>
             <th>MAX QUANTITY</th>

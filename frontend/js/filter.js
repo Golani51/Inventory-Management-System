@@ -1,7 +1,7 @@
 // View mode change handler
 function changeViewMode() {
     const category = document.getElementById('categoryFilter').value; // Get the current category filter
-    const productId = document.getElementById('searchProductId').value.trim(); // Get the current ProductID filter
+    const productId = document.getElementById('searchProduct').value.trim(); // Get the current ProductID filter
     currentViewMode = document.getElementById('viewMode').value; // Update the view mode
     fetchFilteredInventory(category, productId); // Fetch inventory based on filters
 
@@ -183,6 +183,7 @@ function renderShorts(data, container) {
 
 
     if (userRole === 'admin') {
+        dropdownTable.classList.add('alternate-style');
         dropdownHeader.innerHTML = `
         <th>SELECT</th>
         <th>INVENTORY ID</th>
@@ -196,6 +197,7 @@ function renderShorts(data, container) {
         <th>STOCK STATUS</th>
     `;
     } else {
+        dropdownTable.classList.remove('alternate-style');
         dropdownHeader.innerHTML = `
         <th>INVENTORY ID</th>
         <th>PRODUCT NAME</th>
@@ -304,6 +306,7 @@ function renderOrders(data, container) {
 
     const headerRow = document.createElement('tr');
     if (userRole === 'admin') {
+        table.classList.add('alternate-style');
 
         headerRow.innerHTML = `
             <th>SELECT</th>
@@ -319,6 +322,8 @@ function renderOrders(data, container) {
             <th>ASSIGNED LOCATION</th>
         `;
     } else {
+        table.classList.remove('alternate-style');
+
         headerRow.innerHTML = `
         <th>ORDER NUMBER</th>
         <th>ORDERED ITEM</th>
@@ -450,6 +455,7 @@ function renderActiveFilters() {
         document.getElementById('searchOrder').value = '';
         document.getElementById('searchInventory').value = '';
 
+        resetSelectAllCheckboxes();
         renderActiveFilters(); // Update filter boxes
         fetchFilteredInventory();
     });
@@ -544,51 +550,63 @@ function createFilterBox(label, value, onRemove) {
 let isSelectAllChecked = false; // Track the state of the Select All checkbox
 
 function toggleSelectAll(selectAllCheckbox) {
-    // Determine the container based on the current section
-    const sectionContainer = document.getElementById(currentSection);
-    if (!sectionContainer) {
-        console.error('Active section container not found.');
+    // Get the section ID from the data-section attribute
+    const sectionId = selectAllCheckbox.getAttribute('data-section');
+    if (!sectionId) {
+        console.error('Section ID not found in data-section attribute.');
         return;
     }
 
-    // Find all item checkboxes within the active section
-    const itemCheckboxes = sectionContainer.querySelectorAll('.item-checkbox');
+    // Find the corresponding section container
+    const sectionContainer = document.getElementById(sectionId);
+    if (!sectionContainer) {
+        console.error(`Section container with ID "${sectionId}" not found.`);
+        return;
+    }
 
-    // Set their checked state to match the "Select All" checkbox
+    // Find all checkboxes within the section
+    const itemCheckboxes = sectionContainer.querySelectorAll('.item-checkbox');
     itemCheckboxes.forEach(checkbox => {
         checkbox.checked = selectAllCheckbox.checked;
     });
 }
 
 
+// Event listener to handle individual checkbox state changes
 document.addEventListener('change', (event) => {
     if (event.target.classList.contains('item-checkbox')) {
-        const sectionContainer = document.getElementById(currentSection);
+        const sectionContainer = event.target.closest('.section-container'); // Parent section
         if (!sectionContainer) {
-            console.error('Active section container not found.');
+            console.error('Section container not found for this checkbox.');
             return;
         }
 
         const allCheckboxes = sectionContainer.querySelectorAll('.item-checkbox');
         const allChecked = Array.from(allCheckboxes).every(checkbox => checkbox.checked);
-        const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+
+        const selectAllCheckbox = sectionContainer.querySelector('.select-all-checkbox');
         if (selectAllCheckbox) {
             selectAllCheckbox.checked = allChecked;
-            isSelectAllChecked = allChecked;
         }
     }
 });
 
-function resetSelectAllCheckbox() {
-    const sectionContainer = document.getElementById(currentSection);
-    if (!sectionContainer) {
-        console.error('Active section container not found.');
-        return;
-    }
 
-    const selectAllCheckbox = sectionContainer.querySelector('#selectAllCheckbox');
-    if (selectAllCheckbox) {
-        selectAllCheckbox.checked = false;
-    }
-    isSelectAllChecked = false;
+function resetSelectAllCheckboxes() {
+    const selectAllCheckboxes = document.querySelectorAll('.select-all-checkbox');
+    selectAllCheckboxes.forEach(checkbox => {
+        checkbox.checked = false;
+    });
 }
+
+
+// Example: Add event listener to each section's Select All checkbox
+document.addEventListener('DOMContentLoaded', () => {
+    const selectAllCheckboxes = document.querySelectorAll('.select-all-checkbox');
+
+    selectAllCheckboxes.forEach(selectAllCheckbox => {
+        selectAllCheckbox.addEventListener('change', () => {
+            toggleSelectAll(selectAllCheckbox);
+        });
+    });
+});

@@ -30,9 +30,6 @@ table th, table td {
     box-shadow: 0 5px 10px #e1e5ee;
 }
 
-.inventory-table tr th{
-    background-color: #dadada;
-}
 
 .order-table-header tr th {
     background-color: #ffffff;
@@ -100,83 +97,181 @@ table th, table td {
 /* Inventory List Table in Product Mode Adjustment */
 .inventory-table th:nth-child(1),
 .inventory-table td:nth-child(1) {
-    width: 4%; /* Set width for Select column */
+    width: 5%; /* Set width for Select column */
+    box-shadow: none;
 }
 
 .inventory-table th:nth-child(2),
 .inventory-table td:nth-child(2) {
-    width: 7%; /* Set width for Inventory ID column */
+    width: 10%; /* Set width for Inventory ID column */
+    box-shadow: none;
 }
 
 .inventory-table th:nth-child(3),
 .inventory-table td:nth-child(3) {
-    width: 17%; /* Set width for Location */
+    width: 5%; /* Set width for Location */
+    box-shadow: none;
 }
 
 .inventory-table th:nth-child(4),
 .inventory-table td:nth-child(4) {
-    width: 3%; /* Set width for State */
+    width: 10%; /* Set width for State */
+    box-shadow: none;
 }
 
 .inventory-table th:nth-child(5),
 .inventory-table td:nth-child(5) {
-    width: 8%; /* Set width for current Quantity */
+    width: 10%; /* Set width for current Quantity */
+    box-shadow: none;
 }
 
 .inventory-table th:nth-child(6),
 .inventory-table td:nth-child(6) {
-    width: 7%; /* Set width for max quantity */
-}
-
-.inventory-table th:nth-child(7),
-.inventory-table td:nth-child(7) {
-    width: 18%; /* Set width for adjustment */
-}
-
-.inventory-table th:nth-child(8),
-.inventory-table td:nth-child(8) {
-    width: 8%; /* Set width for Stock Status */
+    width: 10%; /* Set width for max quantity */
+    box-shadow: none;
 }
 
 /* Inventory List Table in Location Mode Adjustment */
 .inventory-location-table th:nth-child(1),
 .inventory-location-table td:nth-child(1) {
-    width: 4%; /* Set width for Select */
+    width: 5%; /* Set width for Select */
+    box-shadow: none;
 }
 
 .inventory-location-table th:nth-child(2),
 .inventory-location-table td:nth-child(2) {
-    width: 7%; /* Set width for Inventory ID */
+    width: 10%; /* Set width for Inventory ID */
+    box-shadow: none;
 }
 
 .inventory-location-table th:nth-child(3),
 .inventory-location-table td:nth-child(3) {
     width: 15%; /* Set width for Product Name */
+    box-shadow: none;
 }
 
 .inventory-location-table th:nth-child(4),
 .inventory-location-table td:nth-child(4) {
     width: 15%; /* Set width for column Category */
+    box-shadow: none;
 }
 
 .inventory-location-table th:nth-child(5),
 .inventory-location-table td:nth-child(5) {
     width: 9%; /* Set width for current Quantity */
+    box-shadow: none;
 }
 
 .inventory-location-table th:nth-child(6),
 .inventory-location-table td:nth-child(6) {
     width: 8%; /* Set width for max quantity */
+    box-shadow: none;
 }
 
-.inventory-location-table th:nth-child(7),
-.inventory-location-table td:nth-child(7) {
-    width: 15%; /* Set width for adjustment */
+/* (Admin) Inventory List Table in Product Mode Adjustment */
+.inventory-table.alternate-style th:nth-child(1),
+.inventory-table.alternate-style td:nth-child(1) {
+    width: 4%; /* Set width for Select column */
+    box-shadow: none;
 }
 
-.inventory-location-table th:nth-child(8),
-.inventory-location-table td:nth-child(8) {
-    width: 7%; /* Set width for Stock Status */
+.inventory-table.alternate-style th:nth-child(2),
+.inventory-table.alternate-style td:nth-child(2) {
+    width: 7%; /* Set width for Inventory ID column */
+    box-shadow: none;
+}
+
+.inventory-table.alternate-style th:nth-child(3),
+.inventory-table.alternate-style td:nth-child(3) {
+    width: 17%; /* Set width for Location */
+    box-shadow: none;
+}
+
+.inventory-table.alternate-style th:nth-child(4),
+.inventory-table.alternate-style td:nth-child(4) {
+    width: 3%; /* Set width for State */
+    box-shadow: none;
+}
+
+.inventory-table.alternate-style th:nth-child(5),
+.inventory-table.alternate-style td:nth-child(5) {
+    width: 8%; /* Set width for current Quantity */
+    box-shadow: none;
+}
+
+.inventory-table.alternate-style th:nth-child(6),
+.inventory-table.alternate-style td:nth-child(6) {
+    width: 7%; /* Set width for max quantity */
+    box-shadow: none;
+}
+
+.inventory-table.alternate-style th:nth-child(7),
+.inventory-table.alternate-style td:nth-child(7) {
+    width: 18%; /* Set width for adjustment */
+    box-shadow: none;
+}
+
+.inventory-table.alternate-style th:nth-child(8),
+.inventory-table.alternate-style td:nth-child(8) {
+    width: 8%; /* Set width for Stock Status */
+    box-shadow: none;
+}
+
+/* (Admin) Inventory List Table in Location Mode Adjustment */
+.inventory-location-table.alternate-style th:nth-child(1),
+.inventory-location-table.alternate-style td:nth-child(1) {
+    width: 10%; /* Set width for Select */
+    box-shadow: none;
+}
+
+.inventory-location-table.alternate-style th:nth-child(2),
+.inventory-location-table.alternate-style td:nth-child(2) {
+    width: 10%; /* Set width for Inventory ID */
+    box-shadow: none;
+}
+
+.inventory-location-table.alternate-style th:nth-child(3),
+.inventory-location-table.alternate-style td:nth-child(3) {
+    width: 10%; /* Set width for Product Name */
+    box-shadow: none;
+}
+
+.inventory-location-table.alternate-style th:nth-child(4),
+.inventory-location-table.alternate-style td:nth-child(4) {
+    width: 10%; /* Set width for column Category */
+    box-shadow: none;
+}
+
+.inventory-location-table.alternate-style th:nth-child(5),
+.inventory-location-table.alternate-style td:nth-child(5) {
+    width: 10%; /* Set width for column Category */
+    box-shadow: none;
+}
+
+/* Inventory List Table in Product Mode Adjustment */
+.inventory-table.alternate-style th:nth-child(1),
+.inventory-table.alternate-style td:nth-child(1) {
+    width: 10%; /* Set width for Inventory ID */
+}
+
+.inventory-table.alternate-style th:nth-child(2),
+.inventory-table.alternate-style td:nth-child(2) {
+    width: 10%; /* Set width for Location */
+}
+
+.inventory-table.alternate-style th:nth-child(3),
+.inventory-table.alternate-style td:nth-child(3) {
+    width: 5%; /* Set width for State */
+}
+
+.inventory-table.alternate-style th:nth-child(4),
+.inventory-table.alternate-style td:nth-child(4) {
+    width: 10%; /* Set width for Current Quantity */
+}
+
+.inventory-table.alternate-style th:nth-child(5),
+.inventory-table.alternate-style td:nth-child(5) {
+    width: 10%; /* Set width for Stock Status */
 }
 
 /* Order List Table Adjustment */
@@ -230,53 +325,149 @@ table th, table td {
     width: 10%; /* Set width for Assigned Location */
 }
 
+/* (Admin) Order List Table Adjustment */
+.inventory-order-table.alternate-style  th:nth-child(1) .alternate-style ,
+.inventory-order-table.alternate-style  td:nth-child(1) .alternate-style {
+    width: 5%; /* Set width for Select */
+}
+
+.inventory-order-table.alternate-style  th:nth-child(2),
+.inventory-order-table.alternate-style  td:nth-child(2) {
+    width: 4%; /* Set width for Order number */
+}
+
+.inventory-order-table.alternate-style  th:nth-child(3),
+.inventory-order-table.alternate-style  td:nth-child(3) {
+    width: 9%; /* Set width for Ordered Item */
+}
+
+.inventory-order-table.alternate-style  th:nth-child(4),
+.inventory-order-table.alternate-style  td:nth-child(4) {
+    width: 13%; /* Set width for  Item Category */
+}
+
+.inventory-order-table.alternate-style  th:nth-child(5),
+.inventory-order-table.alternate-style  td:nth-child(5) {
+    width: 13%; /* Set width for Supplier */
+}
+
+.inventory-order-table.alternate-style  th:nth-child(6),
+.inventory-order-table.alternate-style  td:nth-child(6) {
+    width: 5%; /* Set width for Quantity */
+}
+
+.inventory-order-table.alternate-style  th:nth-child(7),
+.inventory-order-table.alternate-style  td:nth-child(7) {
+    width: 5%; /* Set width for UnitPrice */
+}
+
+.inventory-order-table.alternate-style  th:nth-child(8),
+.inventory-order-table.alternate-style  td:nth-child(8) {
+    width: 7%; /* Set width for  Total Amount */
+}
+.inventory-order-table.alternate-style  th:nth-child(9),
+.inventory-order-table.alternate-style  td:nth-child(9) {
+    width: 5%; /* Set width for Requester */
+}
+
+.inventory-order-table.alternate-style  th:nth-child(10),
+.inventory-order-table.alternate-style  td:nth-child(10) {
+    width: 10%; /* Set width for Requested Date */
+}
+
+.inventory-order-table.alternate-style  th:nth-child(11),
+.inventory-order-table.alternate-style  td:nth-child(11) {
+    width: 11%; /* Set width for Assigned Location */
+}
+
 /* Short List Table Adjustment */
 .inventory-short-table th:nth-child(1),
 .inventory-short-table td:nth-child(1) {
-    width: 4%; /* Set width for Select */
+    width: 8%; /* Set width for Inventory ID */
 }
 
 .inventory-short-table th:nth-child(2),
 .inventory-short-table td:nth-child(2) {
-    width: 7%; /* Set width for Inventory ID */
+    width: 11%; /* Set width for Product Name  */
 }
 
 .inventory-short-table th:nth-child(3),
 .inventory-short-table td:nth-child(3) {
-    width: 15%; /* Set width for Product Name */
+    width: 15%; /* Set width for Category */
 }
 
 .inventory-short-table th:nth-child(4),
 .inventory-short-table td:nth-child(4) {
-    width: 15%; /* Set width for Category */
+    width: 10%; /* Set width for Category */
 }
 
 .inventory-short-table th:nth-child(5),
 .inventory-short-table td:nth-child(5) {
-    width: 15%; /* Set width for location */
+    width: 5%; /* Set width for location */
 }
 
 .inventory-short-table th:nth-child(6),
 .inventory-short-table td:nth-child(6) {
-    width: 4%; /* Set width for state */
+    width: 10%; /* Set width for state */
 }
 
 .inventory-short-table th:nth-child(7),
 .inventory-short-table td:nth-child(7) {
-    width: 9%; /* Set width for adjustment */
+    width: 10%; /* Set width for adjustment */
 }
 
 .inventory-short-table th:nth-child(8),
 .inventory-short-table td:nth-child(8) {
+    width: 10%; /* Set width for Stock Status */
+}
+
+/* (Admin) Short List Table Adjustment */
+.inventory-short-table.alternate-style th:nth-child(1),
+.inventory-short-table.alternate-style td:nth-child(1) {
+    width: 4%; /* Set width for Select */
+}
+
+.inventory-short-table.alternate-style th:nth-child(2),
+.inventory-short-table.alternate-style td:nth-child(2) {
+    width: 8%; /* Set width for Inventory ID */
+}
+
+.inventory-short-table.alternate-style th:nth-child(3),
+.inventory-short-table.alternate-style td:nth-child(3) {
+    width: 15%; /* Set width for Product Name */
+}
+
+.inventory-short-table.alternate-style th:nth-child(4),
+.inventory-short-table.alternate-style td:nth-child(4) {
+    width: 11%; /* Set width for Category */
+}
+
+.inventory-short-table.alternate-style th:nth-child(5),
+.inventory-short-table.alternate-style td:nth-child(5) {
+    width: 13%; /* Set width for Location */
+}
+
+.inventory-short-table.alternate-style th:nth-child(6),
+.inventory-short-table.alternate-style td:nth-child(6) {
+    width: 3%; /* Set width for State */
+}
+
+.inventory-short-table.alternate-style th:nth-child(7),
+.inventory-short-table.alternate-style td:nth-child(7) {
+    width: 10%; /* Set width for Current Quantity */
+}
+
+.inventory-short-table.alternate-style th:nth-child(8),
+.inventory-short-table.alternate-style td:nth-child(8) {
+    width: 8%; /* Set width for Max Quantity */
+}
+
+.inventory-short-table.alternate-style th:nth-child(9),
+.inventory-short-table.alternate-style td:nth-child(9) {
+    width: 16%; /* Set width for adjustment */
+}
+
+.inventory-short-table.alternate-style th:nth-child(10),
+.inventory-short-table.alternate-style td:nth-child(10) {
     width: 8%; /* Set width for Stock Status */
-}
-
-.inventory-short-table th:nth-child(9),
-.inventory-short-table td:nth-child(9) {
-    width: 15%; /* Set width for adjustment */
-}
-
-.inventory-short-table th:nth-child(10),
-.inventory-short-table td:nth-child(10) {
-    width: 7%; /* Set width for Stock Status */
 }

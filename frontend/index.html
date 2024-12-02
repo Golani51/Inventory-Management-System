@@ -53,9 +53,17 @@
 
         <!-- Filter Section -->
         <div id="inventory_filter">
-            <label for="selectAll" id="selectAllBox">Select All
-            <input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)">
+            <label id="selectAllInventoryLabel">Select All
+                <input type="checkbox" id="selectAllInventory" class="select-all-checkbox" data-section="inventory_list" onchange="toggleSelectAll(this)">
             </label>
+            
+            <label id="selectAllOrdersLabel">Select All
+                <input type="checkbox" id="selectAllOrders" class="select-all-checkbox" data-section="orders_section" onchange="toggleSelectAll(this)">
+            </label>
+            
+            <label id="selectAllShortListLabel">Select All
+                <input type="checkbox" id="selectAllShortList" class="select-all-checkbox" data-section="short_list" onchange="toggleSelectAll(this)">
+            </label>                  
 
             <label for="viewMode">View Mode:
             <select id="viewMode" onchange="changeViewMode()">
@@ -97,17 +105,17 @@
         </div>
         
         <!-- Inventory List -->
-        <div id="inventory_list">
+        <div id="inventory_list" class="section-container">
             Loading inventory...
         </div>
 
         <!-- Order List Section -->
-        <div id="orders_section" style="display: none;">
+        <div id="orders_section" class="section-container" style="display: none;">
             <div id="orders_table">Loading orders...</div>
         </div>
 
         <!-- Low Stock List -->
-        <div id="short_list" style="display: none;">
+        <div id="short_list" class="section-container" style="display: none;">
             Loading short list...
         </div>
 
