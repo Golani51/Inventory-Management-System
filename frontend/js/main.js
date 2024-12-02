@@ -33,7 +33,7 @@ async function initializePage() {
 
 // Hide all restricted sections if the user is not logged in
 function hideRestrictedSections() {
-    const restrictedSections = ['inventory_list', 'orders_section', 'short_list'];
+    const restrictedSections = ['inventory_list', 'orders_section', 'short_list', 'chart_section'];
     restrictedSections.forEach(id => {
         const section = document.getElementById(id);
         if (section) section.style.display = 'none';
