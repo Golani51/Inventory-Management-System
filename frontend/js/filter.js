@@ -126,6 +126,7 @@ async function fetchFilteredInventory() {
             if (data.length > 0) {
                 renderOrders(data, ordersDiv);
             } else {
+                ordersDiv.style.textAlign = 'center';
                 ordersDiv.textContent = 'No order items found for the given filters.';
             }
         } else if (currentSection === 'inventory_list') {
@@ -139,6 +140,7 @@ async function fetchFilteredInventory() {
                     renderGroupedByLocation(data, inventoryDiv);
                 }
             } else {
+                inventoryDiv.style.textAlign = 'center';
                 inventoryDiv.textContent = 'No inventory items found for the given filters.';
             }
         } else if (currentSection === 'short_list') {
@@ -147,6 +149,7 @@ async function fetchFilteredInventory() {
             if (data.length > 0) {
                 renderShorts(data, shortDiv);
             } else {
+                shortDiv.style.textAlign = 'center';
                 shortDiv.textContent = 'No order items found for the given filters.';
             }
         }
@@ -571,7 +574,6 @@ function toggleSelectAll(selectAllCheckbox) {
     });
 }
 
-
 // Event listener to handle individual checkbox state changes
 document.addEventListener('change', (event) => {
     if (event.target.classList.contains('item-checkbox')) {
@@ -591,22 +593,9 @@ document.addEventListener('change', (event) => {
     }
 });
 
-
 function resetSelectAllCheckboxes() {
     const selectAllCheckboxes = document.querySelectorAll('.select-all-checkbox');
     selectAllCheckboxes.forEach(checkbox => {
         checkbox.checked = false;
     });
 }
-
-
-// Example: Add event listener to each section's Select All checkbox
-document.addEventListener('DOMContentLoaded', () => {
-    const selectAllCheckboxes = document.querySelectorAll('.select-all-checkbox');
-
-    selectAllCheckboxes.forEach(selectAllCheckbox => {
-        selectAllCheckbox.addEventListener('change', () => {
-            toggleSelectAll(selectAllCheckbox);
-        });
-    });
-});

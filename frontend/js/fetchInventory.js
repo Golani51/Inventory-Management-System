@@ -494,27 +494,25 @@ async function adjustSelectedItems() {
             // Adjust the heigh case by case
             if (errorCount <= 8) {
                 if (errorCount === 1) {
-                   document.getElementById('errorModal').style.height = '205px';
-                   document.getElementById('errorModalMessage').style.marginLeft = '0px';
-                   document.getElementById('errorModalMessage').style.textAlign = 'center';
+                document.getElementById('errorModal').style.height = '205px';
+                document.getElementById('errorModalMessage').style.marginLeft = '0px';
+                document.getElementById('errorModalMessage').style.textAlign = 'center';
 
                 } else if (errorCount === 2) {
-                    document.getElementById('errorModal').style.height = '225px';
+                    document.getElementById('errorModal').style.height = '220px';
                 } else if (errorCount === 3) {
-                    document.getElementById('errorModal').style.height = '240px';
+                    document.getElementById('errorModal').style.height = '235px';
                 } else if (errorCount === 4) {
-                    document.getElementById('errorModal').style.height = '260px';
+                    document.getElementById('errorModal').style.height = '255px';
                 } else if (errorCount === 5) {
-                    document.getElementById('errorModal').style.height = '280px';
+                    document.getElementById('errorModal').style.height = '270px';
                 } else if (errorCount === 6) {
-                    document.getElementById('errorModal').style.height = '300px';
+                    document.getElementById('errorModal').style.height = '290px';
                 } else if (errorCount === 7) {
-                    document.getElementById('errorModal').style.height = '320px';
+                    document.getElementById('errorModal').style.height = '305px';
                 } else if (errorCount === 8) {
-                    document.getElementById('errorModal').style.height = '335px';
+                    document.getElementById('errorModal').style.height = '325px';
                 }
-            } else {
-                document.getElementById('errorModalMessage').style.marginLeft = '0px';
             }
 
         }, 3400);

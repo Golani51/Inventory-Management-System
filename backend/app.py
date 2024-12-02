@@ -473,13 +473,6 @@ def revert_order():
         data = request.json
         adjustments = data.get('adjustments', [])
 
-        if not adjustments:
-            return jsonify({"error": "No adjustments provided"}), 400
-
-        employee_id = session.get('employee_id')
-        if not employee_id:
-            return jsonify({"error": "Employee not logged in"}), 401
-
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
 
@@ -487,15 +480,10 @@ def revert_order():
             inventory_id = adjustment.get('InventoryID')
             order_id = adjustment.get('OrderID')
 
-            if not inventory_id or not order_id:
-                return jsonify({"error": "Invalid data in adjustment"}), 400
-
             # Fetch Quantity from OrderDetails
             cursor.execute("SELECT Quantity FROM OrderDetails WHERE OrderID = %s", (order_id,))
             order = cursor.fetchone()
-            if not order:
-                return jsonify({"error": f"OrderDetails for OrderID {order_id} not found"}), 40
-                
+
             quantity = order['Quantity']
 
             # Update Inventory
@@ -519,24 +507,28 @@ def revert_order():
         cursor.close()
         conn.close()
 
-@app.route('/order-details', methods=['GET'])
-def get_order_details():
-    order_id = request.args.get('OrderID')
-
-    if not order_id:
-        return jsonify({"error": "OrderID is required"}), 400
-
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-
+@app.route('/batch-order-details', methods=['POST'])
+def get_batch_order_details():
     try:
-        cursor.execute("SELECT OrderDate FROM Orders WHERE OrderID = %s", (order_id,))
-        order = cursor.fetchone()
+        data = request.json
+        order_ids = data.get('OrderIDs', [])
 
-        if not order:
-            return jsonify({"error": "Order not found"}), 404
+        if not order_ids:
+            return jsonify({"error": "No OrderIDs provided"}), 400
 
-        return jsonify({"OrderDate": order['OrderDate']}), 200
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        cursor.execute(
+            "SELECT OrderID, OrderDate FROM Orders WHERE OrderID IN (%s)" % ','.join(['%s'] * len(order_ids)),
+            order_ids
+        )
+        orders = cursor.fetchall()
+
+        return jsonify({"orders": orders}), 200
+    except Exception as e:
+        print(f"Error in get_batch_order_details: {str(e)}")
+        return jsonify({"error": "Internal server error", "details": str(e)}), 500
     finally:
         cursor.close()
         conn.close()
