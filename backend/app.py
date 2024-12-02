@@ -1,5 +1,5 @@
 import os
-from flask import Flask, request, jsonify, send_from_directory, session
+from flask import Flask, request, jsonify, send_from_directory, send_file, session
 from flask_bcrypt import Bcrypt
 import mysql.connector
 from datetime import datetime, timedelta, timezone
@@ -46,16 +46,9 @@ def log_action():
     logFile.close()
 
 #Send audit log out
-@app.route('/log', methods=['POST'])
+@app.route('/log', methods=['GET'])
 def download_log():
-    # Only allow admin to download a log
-    if not session['employee_id']:
-        return {'error': 'Login required'}, 401
-    
-    if session['role'] != 'admin':
-        return {'error': 'Unauthorized'}, 403
-    
-    return send_from_directory(app.static_folder, 'log.txt')
+    return send_file('log.txt', as_attachment=True)
 
 #Reset audit log file
 @app.route('/logReset')
