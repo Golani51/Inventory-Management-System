@@ -7,7 +7,7 @@
     --btn-bg: #4B5968;
     --text-light: #fefefe;
 }
-.adjustSelectedButton {
+.adjustSelectedButton, .revertOrderButton {
     font-size: 16px;
     font-family: "Montserrat","Helvetica Neue",Helvetica,Arial,sans-serif;
     display: inline-block;

@@ -95,6 +95,7 @@ function renderGroupedByLocation(data, inventoryDiv) {
         const dropdownHeader = document.createElement('tr');
 
         if (userRole === 'admin') {
+            dropdownTable.classList.add('alternate-style');
             dropdownHeader.innerHTML = `
                 <thead>
                 <th>SELECT</th>
@@ -108,9 +109,9 @@ function renderGroupedByLocation(data, inventoryDiv) {
                 </thead>
             `;
         } else {
+            dropdownTable.classList.remove('alternate-style');
             dropdownHeader.innerHTML = `
                 <thead>
-                <th>SELECT</th>
                 <th>INVENTORY ID</th>
                 <th>PRODUCT NAME</th>
                 <th>ITEM CATEGORY</th>
@@ -132,10 +133,10 @@ function renderGroupedByLocation(data, inventoryDiv) {
 
             // Calculate stock status
             if (item.stat === 'Low') {
-                stockButton.textContent = 'Low Stock';
+                stockButton.textContent = 'Low';
                 stockButton.classList.add('low');
             } else {
-                stockButton.textContent = 'Enough Stock';
+                stockButton.textContent = 'Enough';
                 stockButton.classList.add('enough');
             }
 
@@ -166,7 +167,6 @@ function renderGroupedByLocation(data, inventoryDiv) {
             } else {
                 row.innerHTML = `
                     <tbody>
-                    <td><input type="checkbox" class="item-checkbox" data-id="${item.InventoryID}"></td>
                     <td>${item.InventoryID}</td>
                     <td>${item.name}</td>
                     <td>${item.category}</td>
@@ -251,6 +251,7 @@ function renderGroupedByProduct(data, inventoryDiv) {
         const dropdownHeader = document.createElement('tr');
 
         if (userRole === 'admin') {
+            dropdownTable.classList.add('alternate-style');
             dropdownHeader.innerHTML = `
                 <thead>
                 <th>SELECT</th>
@@ -264,11 +265,11 @@ function renderGroupedByProduct(data, inventoryDiv) {
                 </thead>
             `;
         } else {
+            dropdownTable.classList.remove('alternate-style');
             dropdownHeader.innerHTML = `
             <thead>
-            <th>Select</th>
             <th>INVENTORY ID</th>
-            <th>Location</th>
+            <th>LOCATION</th>
             <th>STATE</th>
             <th>CURRENT QUANTITY</th>
             <th>MAX QUANTITY</th>
@@ -326,7 +327,6 @@ function renderGroupedByProduct(data, inventoryDiv) {
             } else {
                 row.innerHTML = `
                     <tbody>
-                    <td><input type="checkbox" class="item-checkbox" data-id="${item.InventoryID}"></td>
                     <td>${item.InventoryID}</td>
                     <td>${item.location}</td>
                     <td>${item.state}</td>
@@ -359,12 +359,17 @@ function disableLinks() {
 }
 
 function enableLinks() {
-    const linksToEnable = ['inventoryTab', 'ordersTab', 'chartsTab', 'auditLog'];
+    const tabs = {
+        inventoryTab: 'inventory_list',
+        ordersTab: 'orders_section',
+        chartsTab: '',
+        auditLog: '',
+    };
 
-    linksToEnable.forEach(id => {
+    Object.entries(tabs).forEach(([id, section]) => {
         const link = document.getElementById(id);
         link.classList.remove('disabled'); // Remove the disabled class
-        link.onclick = null; // Remove the preventDefault handler
+        link.onclick = () => showSection(section); // Restore tab functionality
     });
 }
 
@@ -489,27 +494,25 @@ async function adjustSelectedItems() {
             // Adjust the heigh case by case
             if (errorCount <= 8) {
                 if (errorCount === 1) {
-                   document.getElementById('errorModal').style.height = '205px';
-                   document.getElementById('errorModalMessage').style.marginLeft = '0px';
-                   document.getElementById('errorModalMessage').style.textAlign = 'center';
+                document.getElementById('errorModal').style.height = '205px';
+                document.getElementById('errorModalMessage').style.marginLeft = '0px';
+                document.getElementById('errorModalMessage').style.textAlign = 'center';
 
                 } else if (errorCount === 2) {
-                    document.getElementById('errorModal').style.height = '225px';
+                    document.getElementById('errorModal').style.height = '220px';
                 } else if (errorCount === 3) {
-                    document.getElementById('errorModal').style.height = '240px';
+                    document.getElementById('errorModal').style.height = '235px';
                 } else if (errorCount === 4) {
-                    document.getElementById('errorModal').style.height = '260px';
+                    document.getElementById('errorModal').style.height = '255px';
                 } else if (errorCount === 5) {
-                    document.getElementById('errorModal').style.height = '280px';
+                    document.getElementById('errorModal').style.height = '270px';
                 } else if (errorCount === 6) {
-                    document.getElementById('errorModal').style.height = '300px';
+                    document.getElementById('errorModal').style.height = '290px';
                 } else if (errorCount === 7) {
-                    document.getElementById('errorModal').style.height = '320px';
+                    document.getElementById('errorModal').style.height = '305px';
                 } else if (errorCount === 8) {
-                    document.getElementById('errorModal').style.height = '335px';
+                    document.getElementById('errorModal').style.height = '325px';
                 }
-            } else {
-                document.getElementById('errorModalMessage').style.marginLeft = '0px';
             }
 
         }, 3400);

@@ -89,6 +89,9 @@ function configureUIAfterLogin(data) {
 
 // Show specific section
 function showSection(sectionId) {
+    resetSelectAllCheckboxes();
+    document.querySelectorAll('.item-checkbox').forEach(checkbox => checkbox.checked = false);
+
     loginNotif.textContent = '';
     
     if (!isLoggedIn) {
@@ -113,24 +116,32 @@ function showSection(sectionId) {
         }
 
         if (sectionId === 'inventory_list') {
+            
             const inventoryFilter = document.getElementById('inventory_filter');
             inventoryFilter.style.display = 'flex';
             inventoryFilter.style.margin = '0 auto'; // Center it horizontally
         
+            document.getElementById('selectAllOrdersLabel').style.display = 'none';
+            document.getElementById('selectAllShortListLabel').style.display = 'none';
+
             document.querySelector('label[for="viewMode"]').style.display = 'block';
             document.querySelector('label[for="searchProduct"]').style.display = 'block';
             document.querySelector('label[for="searchOrder"]').style.display = 'none';
             document.querySelector('label[for="searchInventory"]').style.display = 'none';
             document.getElementById('activeFilters').style.display = 'flex';
 
+            Array.from(document.getElementsByClassName('revertOrderButton')).forEach(button => {
+                button.style.display = 'none';
+            });
+
             if (userRole === 'admin') {
-                document.querySelector('label[for="selectAll"]').style.display = 'block';
+                document.getElementById('selectAllInventoryLabel').style.display = 'block';
                 Array.from(document.getElementsByClassName('adjustSelectedButton')).forEach(button => {
                     button.style.display = 'block';
                 });
                 
             } else {
-                document.querySelector('label[for="selectAll"]').style.display = 'none';
+                document.getElementById('selectAllInventoryLabel').style.display = 'none';
                 Array.from(document.getElementsByClassName('adjustSelectedButton')).forEach(button => {
                     button.style.display = 'none';
                 });
@@ -150,7 +161,9 @@ function showSection(sectionId) {
             inventoryFilter.style.display = 'flex';
             inventoryFilter.style.margin = '0 auto'; // Center it horizontally
 
-            document.querySelector('label[for="selectAll"]').style.display = 'none';
+            document.getElementById('selectAllInventoryLabel').style.display = 'none';
+            document.getElementById('selectAllShortListLabel').style.display = 'none';
+
             document.querySelector('label[for="viewMode"]').style.display = 'none';
             document.querySelector('label[for="searchProduct"]').style.display = 'none';
             document.querySelector('label[for="searchOrder"]').style.display = 'block';
@@ -160,6 +173,26 @@ function showSection(sectionId) {
             Array.from(document.getElementsByClassName('adjustSelectedButton')).forEach(button => {
                 button.style.display = 'none';
             });
+
+            const table = document.querySelector('.inventory-order-table');
+
+            if (userRole === 'admin') {
+                document.getElementById('selectAllOrdersLabel').style.display = 'block';
+
+                Array.from(document.getElementsByClassName('revertOrderButton')).forEach(button => {
+                    button.style.display = 'block';
+                    button.style.marginTop = '-20px';
+                });
+
+            } else {
+                document.getElementById('selectAllOrdersLabel').style.display = 'none';
+
+                Array.from(document.getElementsByClassName('revertOrderButton')).forEach(button => {
+                    button.style.display = 'none';
+                });
+
+                //table.classList.remove('alternate-style');
+            }
             
             document.querySelector('label[for="categoryFilter"]').style.marginLeft = '20px';
         
@@ -174,25 +207,30 @@ function showSection(sectionId) {
             inventoryFilter.style.display = 'flex';
             inventoryFilter.style.margin = '0 auto'; // Center it horizontally
 
-            document.querySelector('label[for="selectAll"]').style.display = 'none';
+            document.getElementById('selectAllOrdersLabel').style.display = 'none';
+            document.getElementById('selectAllInventoryLabel').style.display = 'none';
+
             document.querySelector('label[for="viewMode"]').style.display = 'none';
             document.querySelector('label[for="searchProduct"]').style.display = 'none';
             document.querySelector('label[for="searchOrder"]').style.display = 'none';
             document.querySelector('label[for="searchInventory"]').style.display = 'block';
             document.getElementById('activeFilters').style.display = 'flex';
 
+            Array.from(document.getElementsByClassName('revertOrderButton')).forEach(button => {
+                button.style.display = 'none';
+            });
+
             if (userRole === 'admin') {
-                document.querySelector('label[for="selectAll"]').style.display = 'block';
+                document.getElementById('selectAllShortListLabel').style.display = 'block';
                 Array.from(document.getElementsByClassName('adjustSelectedButton')).forEach(button => {
                     button.style.display = 'block';
                 });
                 
             } else {
-                document.querySelector('label[for="selectAll"]').style.display = 'none';
+                document.getElementById('selectAllShortListLabel').style.display = 'none';
                 Array.from(document.getElementsByClassName('adjustSelectedButton')).forEach(button => {
                     button.style.display = 'none';
                 });
-                
             }
 
             document.querySelector('label[for="categoryFilter"]').style.marginLeft = '20px';
@@ -210,8 +248,16 @@ function showSection(sectionId) {
         Array.from(document.getElementsByClassName('adjustSelectedButton')).forEach(button => {
             button.style.display = 'none';
         });
+
+
+        Array.from(document.getElementsByClassName('revertOrderButton')).forEach(button => {
+            button.style.display = 'none';
+        });
         
-        document.querySelector('label[for="selectAll"]').style.display = 'none';
+        document.getElementById('selectAllOrdersLabel').style.display = 'none';
+        document.getElementById('selectAllInventoryLabel').style.display = 'none';
+        document.getElementById('selectAllShortListLabel').style.display = 'none';
+
         document.querySelector('label[for="viewMode"]').style.display = 'none';
         document.querySelector('label[for="searchProduct"]').style.display = 'none';
         document.querySelector('label[for="searchOrder"]').style.display = 'none';

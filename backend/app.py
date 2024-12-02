@@ -2,7 +2,7 @@ import os
 from flask import Flask, request, jsonify, send_from_directory, session
 from flask_bcrypt import Bcrypt
 import mysql.connector
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 
 
 app = Flask(__name__, static_folder='frontend', template_folder='frontend')
@@ -189,11 +189,8 @@ def update_quantity():
         return jsonify({"error": "Internal server error", "details": str(e)}), 500
 
     finally:
-        if cursor:
-            cursor.close()
-        if conn:
-            conn.close()
-
+        cursor.close()
+        conn.close()
 
 # Get information from database for Order List
 @app.route('/Orders', methods=['GET'])
@@ -259,6 +256,7 @@ def fetch_orders():
         return jsonify({"error": "Error fetching orders"}), 500
     
     finally:
+        cursor.close()
         conn.close()
 
 @app.route('/order-categories', methods=['GET'])
@@ -285,6 +283,7 @@ def fetch_orderCategories():
         return jsonify({"error": "Error fetching categories"}), 500
     
     finally:
+        cursor.close()
         conn.close()
 
 @app.route('/order-states', methods=['GET'])
@@ -311,6 +310,7 @@ def fetch_orderStates():
         return jsonify({"error": "Error fetching states"}), 500
     
     finally:
+        cursor.close()
         conn.close()
 
 # List all the categories in Products table
@@ -327,6 +327,7 @@ def fetch_categories():
         return jsonify({"error": "Error fetching categories"}), 500
     
     finally:
+        cursor.close()
         conn.close()
 
 # List all the categories in Products table
@@ -343,6 +344,7 @@ def fetch_states():
         return jsonify({"error": "Error fetching states"}), 500
     
     finally:
+        cursor.close()
         conn.close()
 
 @app.route('/short-categories', methods=['GET'])
@@ -364,6 +366,7 @@ def fetch_shortCategories():
         return jsonify({"error": "Error fetching categories"}), 500
     
     finally:
+        cursor.close()
         conn.close()
 
 @app.route('/short-states', methods=['GET'])
@@ -385,14 +388,14 @@ def fetch_shortStates():
         return jsonify({"error": "Error fetching states"}), 500
     
     finally:
+        cursor.close()
         conn.close()
-
 
 @app.route('/update-stock-status', methods=['POST'])
 def update_stock_status():
     try:
-        connection = get_db_connection()
-        cursor = connection.cursor()
+        conn = get_db_connection()
+        cursor = conn.cursor()
 
         cursor.execute(
                         """
@@ -402,7 +405,7 @@ def update_stock_status():
                                 ELSE 'Enough'
                             END
                         """)
-        connection.commit()
+        conn.commit()
         return jsonify({'success': True}), 200
 
     except Exception as e:
@@ -411,7 +414,7 @@ def update_stock_status():
 
     finally:
         cursor.close()
-        connection.close()
+        conn.close()
 
 @app.route('/low-stock-list', methods=['GET'])
 def get_low_stock():
@@ -420,8 +423,8 @@ def get_low_stock():
         inventory_id = request.args.get('orderId')
         state = request.args.get('state')
 
-        connection = get_db_connection()
-        cursor = connection.cursor(dictionary = True)
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary = True)
 
         query = """
                     SELECT Inventory.InventoryID, Inventory.ProductID, Inventory.MaxCapacity as maxqt, 
@@ -462,7 +465,73 @@ def get_low_stock():
 
     finally:
         cursor.close()
-        connection.close()
+        conn.close()
+
+@app.route('/revert-order', methods=['POST'])
+def revert_order():
+    try:
+        data = request.json
+        adjustments = data.get('adjustments', [])
+
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        for adjustment in adjustments:
+            inventory_id = adjustment.get('InventoryID')
+            order_id = adjustment.get('OrderID')
+
+            # Fetch Quantity from OrderDetails
+            cursor.execute("SELECT Quantity FROM OrderDetails WHERE OrderID = %s", (order_id,))
+            order = cursor.fetchone()
+
+            quantity = order['Quantity']
+
+            # Update Inventory
+            cursor.execute(
+                "UPDATE Inventory SET CurrentQuantity = GREATEST(0, CurrentQuantity - %s) WHERE InventoryID = %s",
+                (quantity, inventory_id)
+            )
+
+            # Delete OrderDetails and Orders
+            cursor.execute("DELETE FROM OrderDetails WHERE OrderID = %s", (order_id,))
+            cursor.execute("DELETE FROM Orders WHERE OrderID = %s", (order_id,))
+
+        conn.commit()
+        return jsonify({"message": "Orders reverted and inventory updated successfully"}), 200
+
+    except Exception as e:
+        print(f"Error in revert_order: {str(e)}")
+        return jsonify({"error": "Internal server error", "details": str(e)}), 500
+
+    finally:
+        cursor.close()
+        conn.close()
+
+@app.route('/batch-order-details', methods=['POST'])
+def get_batch_order_details():
+    try:
+        data = request.json
+        order_ids = data.get('OrderIDs', [])
+
+        if not order_ids:
+            return jsonify({"error": "No OrderIDs provided"}), 400
+
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        cursor.execute(
+            "SELECT OrderID, OrderDate FROM Orders WHERE OrderID IN (%s)" % ','.join(['%s'] * len(order_ids)),
+            order_ids
+        )
+        orders = cursor.fetchall()
+
+        return jsonify({"orders": orders}), 200
+    except Exception as e:
+        print(f"Error in get_batch_order_details: {str(e)}")
+        return jsonify({"error": "Internal server error", "details": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
 
 
 if __name__ == '__main__':
