@@ -110,7 +110,6 @@ function renderGroupedByLocation(data, inventoryDiv) {
         } else {
             dropdownHeader.innerHTML = `
                 <thead>
-                <th>SELECT</th>
                 <th>INVENTORY ID</th>
                 <th>PRODUCT NAME</th>
                 <th>ITEM CATEGORY</th>
@@ -166,7 +165,6 @@ function renderGroupedByLocation(data, inventoryDiv) {
             } else {
                 row.innerHTML = `
                     <tbody>
-                    <td><input type="checkbox" class="item-checkbox" data-id="${item.InventoryID}"></td>
                     <td>${item.InventoryID}</td>
                     <td>${item.name}</td>
                     <td>${item.category}</td>
@@ -266,7 +264,6 @@ function renderGroupedByProduct(data, inventoryDiv) {
         } else {
             dropdownHeader.innerHTML = `
             <thead>
-            <th>Select</th>
             <th>INVENTORY ID</th>
             <th>Location</th>
             <th>STATE</th>
@@ -326,7 +323,6 @@ function renderGroupedByProduct(data, inventoryDiv) {
             } else {
                 row.innerHTML = `
                     <tbody>
-                    <td><input type="checkbox" class="item-checkbox" data-id="${item.InventoryID}"></td>
                     <td>${item.InventoryID}</td>
                     <td>${item.location}</td>
                     <td>${item.state}</td>
@@ -359,12 +355,17 @@ function disableLinks() {
 }
 
 function enableLinks() {
-    const linksToEnable = ['inventoryTab', 'ordersTab', 'chartsTab', 'auditLog'];
+    const tabs = {
+        inventoryTab: 'inventory_list',
+        ordersTab: 'orders_section',
+        chartsTab: '',
+        auditLog: '',
+    };
 
-    linksToEnable.forEach(id => {
+    Object.entries(tabs).forEach(([id, section]) => {
         const link = document.getElementById(id);
         link.classList.remove('disabled'); // Remove the disabled class
-        link.onclick = null; // Remove the preventDefault handler
+        link.onclick = () => showSection(section); // Restore tab functionality
     });
 }
 

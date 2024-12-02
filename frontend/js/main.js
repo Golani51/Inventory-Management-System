@@ -123,6 +123,10 @@ function showSection(sectionId) {
             document.querySelector('label[for="searchInventory"]').style.display = 'none';
             document.getElementById('activeFilters').style.display = 'flex';
 
+            Array.from(document.getElementsByClassName('revertOrderButton')).forEach(button => {
+                button.style.display = 'none';
+            });
+
             if (userRole === 'admin') {
                 document.querySelector('label[for="selectAll"]').style.display = 'block';
                 Array.from(document.getElementsByClassName('adjustSelectedButton')).forEach(button => {
@@ -160,6 +164,17 @@ function showSection(sectionId) {
             Array.from(document.getElementsByClassName('adjustSelectedButton')).forEach(button => {
                 button.style.display = 'none';
             });
+
+            if (userRole === 'admin') {
+                Array.from(document.getElementsByClassName('revertOrderButton')).forEach(button => {
+                    button.style.display = 'block';
+                    button.style.marginTop = '-18px';
+                });
+            } else {
+                Array.from(document.getElementsByClassName('revertOrderButton')).forEach(button => {
+                    button.style.display = 'none';
+                });
+            }
             
             document.querySelector('label[for="categoryFilter"]').style.marginLeft = '20px';
         
@@ -180,6 +195,10 @@ function showSection(sectionId) {
             document.querySelector('label[for="searchOrder"]').style.display = 'none';
             document.querySelector('label[for="searchInventory"]').style.display = 'block';
             document.getElementById('activeFilters').style.display = 'flex';
+
+            Array.from(document.getElementsByClassName('revertOrderButton')).forEach(button => {
+                button.style.display = 'none';
+            });
 
             if (userRole === 'admin') {
                 document.querySelector('label[for="selectAll"]').style.display = 'block';
@@ -208,6 +227,11 @@ function showSection(sectionId) {
         inventoryFilter.style.display = 'none';
     
         Array.from(document.getElementsByClassName('adjustSelectedButton')).forEach(button => {
+            button.style.display = 'none';
+        });
+
+
+        Array.from(document.getElementsByClassName('revertOrderButton')).forEach(button => {
             button.style.display = 'none';
         });
         

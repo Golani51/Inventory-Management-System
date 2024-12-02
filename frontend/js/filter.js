@@ -197,7 +197,6 @@ function renderShorts(data, container) {
     `;
     } else {
         dropdownHeader.innerHTML = `
-        <th>SELECT</th>
         <th>INVENTORY ID</th>
         <th>PRODUCT NAME</th>
         <th>CATEGORY</th>
@@ -259,7 +258,6 @@ function renderShorts(data, container) {
         `;
         } else {
             row.innerHTML = `
-            <td><input type="checkbox" class="item-checkbox" data-id="${item.InventoryID}"></td>
             <td>${item.InventoryID}</td>
             <td>${item.name}</td>
             <td>${item.category}</td>
@@ -305,7 +303,23 @@ function renderOrders(data, container) {
     table.className = 'inventory-order-table';
 
     const headerRow = document.createElement('tr');
-    headerRow.innerHTML = `
+    if (userRole === 'admin') {
+
+        headerRow.innerHTML = `
+            <th>SELECT</th>
+            <th>ORDER NUMBER</th>
+            <th>ORDERED ITEM</th>
+            <th>ITEM CATEGORY</th>
+            <th>SUPPLIER</th>
+            <th>QUANTITY</th>
+            <th>UNIT PRICE</th>
+            <th>TOTAL AMOUNT</th>
+            <th>REQUESTER</th>
+            <th>REQUESTED DATE</th>
+            <th>ASSIGNED LOCATION</th>
+        `;
+    } else {
+        headerRow.innerHTML = `
         <th>ORDER NUMBER</th>
         <th>ORDERED ITEM</th>
         <th>ITEM CATEGORY</th>
@@ -317,22 +331,40 @@ function renderOrders(data, container) {
         <th>REQUESTED DATE</th>
         <th>ASSIGNED LOCATION</th>
     `;
+    }
     table.appendChild(headerRow);
 
     data.forEach(order => {
         const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${order.OrderID}</td>
-            <td>${order.ProductName}</td>
-            <td>${order.Category}</td>
-            <td>${order.SupplierName}</td>
-            <td>${order.Quantity}</td>
-            <td>$${order.UnitPrice}</td>
-            <td>$${order.TotalAmount}</td>
-            <td>${order.FirstName} ${order.LastName}</td>
-            <td>${order.OrderDate}</td>
-            <td>${order.AssignedLocation}, ${order.LocationState}</td>
-        `;
+        if (userRole === 'admin') {
+            row.innerHTML = `
+                <td><input type="checkbox" class="item-checkbox" data-id="${order.OrderID}-${order.InventoryID}"></td>
+                <td>${order.OrderID}</td>
+                <td>${order.ProductName}</td>
+                <td>${order.Category}</td>
+                <td>${order.SupplierName}</td>
+                <td>${order.Quantity}</td>
+                <td>$${order.UnitPrice}</td>
+                <td>$${order.TotalAmount}</td>
+                <td>${order.FirstName} ${order.LastName}</td>
+                <td>${order.OrderDate}</td>
+                <td>${order.AssignedLocation}, ${order.LocationState}</td>
+            `;
+        }
+        else {
+            row.innerHTML = `
+                <td>${order.OrderID}</td>
+                <td>${order.ProductName}</td>
+                <td>${order.Category}</td>
+                <td>${order.SupplierName}</td>
+                <td>${order.Quantity}</td>
+                <td>$${order.UnitPrice}</td>
+                <td>$${order.TotalAmount}</td>
+                <td>${order.FirstName} ${order.LastName}</td>
+                <td>${order.OrderDate}</td>
+                <td>${order.AssignedLocation}, ${order.LocationState}</td>
+            `;
+        }
         table.appendChild(row);
     });
 
@@ -546,7 +578,6 @@ document.addEventListener('change', (event) => {
         }
     }
 });
-
 
 function resetSelectAllCheckbox() {
     const sectionContainer = document.getElementById(currentSection);
