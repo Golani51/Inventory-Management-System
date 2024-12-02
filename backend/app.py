@@ -1,5 +1,5 @@
 import os
-from flask import Flask, request, jsonify, send_from_directory, session
+from flask import Flask, request, jsonify, send_from_directory, send_file, session
 from flask_bcrypt import Bcrypt
 import mysql.connector
 from datetime import datetime, timedelta, timezone
@@ -34,7 +34,31 @@ def check_session():
     
     else:
         return jsonify({"error": "Not logged in"}), 401
-    
+
+# Log to audit file
+def log_action():
+    action = request.json
+    logFile = open("log.txt","a")
+    currentDate = datetime.now()
+    print(str(currentDate) + ": ", logFile)
+    print(action, logFile)
+    print("\n", logFile)
+    logFile.close()
+
+#Send audit log out
+@app.route('/log', methods=['GET'])
+def download_log():
+    return send_file('log.txt', as_attachment=True)
+
+#Reset audit log file
+@app.route('/logReset')
+def reset_log():
+    os.remove("log.txt")
+    logFile = open("log.txt","a")
+    currentDate = datetime.now()
+    print(str(currentDate) + ": Log file was reset\n", logFile)
+    logFile.close()
+
 # Login
 # Check username and password
 @app.route('/login', methods=['POST'])
@@ -58,9 +82,13 @@ def login():
             session['firstname'] = user['FirstName'] 
             session['lastname'] = user['LastName']
 
+            action = "Employee #" + str(session['employee_id']) + ": " + str(session['firstname']) + " " + str(session['lastname']) + " has logged in"
+            log_action(action)
             return jsonify({"username": session['username'], "role": session['role'], "firstname": session['firstname'], "lastname": session['lastname']}), 200
         
         else:
+            action = "Invalid login attempt by user " + user['Username']
+            log_action(action)
             return jsonify({"error": "Invalid credentials"}), 401
         
     except Exception as e:
@@ -69,6 +97,8 @@ def login():
 # Logout
 @app.route('/logout', methods=['POST'])
 def logout():
+    action = "Employee #" + str(session['employee_id']) + ": " + str(session['firstname']) + " " + str(session['lastname']) + " has logged out"
+    log_action(action)
     session.clear()  # Clear all session data
     return jsonify({"message": "Logged out successfully"}), 200
 
@@ -182,12 +212,14 @@ def update_quantity():
                 )
 
         conn.commit()
+        action = "Employee " + str(employee_id) + "successfully to updated inventory item " + str(inventory_id) + "by " + str(adjustment)
+        log_action(action)
         return jsonify({"message": "Quantity updated successfully"}), 200
 
     except Exception as e:
-        print(f"Error in update_quantity: {str(e)}")
-        return jsonify({"error": "Internal server error", "details": str(e)}), 500
-
+        action = "Employee " + str(employee_id) + "failed to update inventory item " + str(inventory_id) + "by " + str(adjustment)
+        log_action(action)
+        return jsonify({"error": "Quantity update was not successful"}), 500
     finally:
         cursor.close()
         conn.close()
@@ -416,6 +448,7 @@ def update_stock_status():
         cursor.close()
         conn.close()
 
+
 @app.route('/low-stock-list', methods=['GET'])
 def get_low_stock():
     try:
@@ -497,9 +530,13 @@ def revert_order():
             cursor.execute("DELETE FROM Orders WHERE OrderID = %s", (order_id,))
 
         conn.commit()
+        action = "Order #" + str(order_id) + " was reverted"
+        log_action(action)
         return jsonify({"message": "Orders reverted and inventory updated successfully"}), 200
 
     except Exception as e:
+        action = "Order #" + str(order_id) + " failed to be reverted"
+        log_action(action)
         print(f"Error in revert_order: {str(e)}")
         return jsonify({"error": "Internal server error", "details": str(e)}), 500
 
