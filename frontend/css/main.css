@@ -305,7 +305,8 @@ select, input[type="username"], input[type="password"] {
     cursor: not-allowed;  /* Show a "not-allowed" cursor */
 }
 
-#searchIdProductButton, #logoutButton, #loginButton, #searchIdOrderButton, #searchIdInventoryButton {
+#searchIdProductButton, #logoutButton, #loginButton, #searchIdOrderButton, #searchIdInventoryButton,
+#downloadLog, #resetLog {
     background: white;
     border-radius: 6px;
     border: 1px solid #b9b9b9;

@@ -24,7 +24,7 @@
                     <li><a href="javascript:void(0)" onclick="showSection('inventory_list')" id="inventoryTab">Inventory</a></li>
                     <li><a href="javascript:void(0)" onclick="showSection('orders_section')" id="ordersTab">Orders</a></li>
                     <li><a href="javascript:void(0)" onclick="showSection('chart_section')" id="chartsTab">Chart</a></li>
-                    <li><a href="javascript:void(0)" onclick="showSection('')" id="auditLog">AuditLogs</a></li>
+                    <li><a href="javascript:void(0)" onclick="showSection('auditlog_section')" id="auditLog">AuditLogs</a></li>
                 </ul>
                 <div class="navbar-right">
                     <button class="icon-button" id="notif_button" onclick="toggleModal('notificationsModal', this)">
@@ -114,10 +114,20 @@
             <div id="orders_table">Loading orders...</div>
         </div>
 
+        <!-- Chart Section -->
         <div id="chart_section" style="display: none;">
-            <div id="google_chart" style="width: 800px; height: 600px;">Loading chart...</div>  
-            <div id="pie-chart" style="width: 800px; height: 600px;">Loading chart...</div>
-            <div id="monthly-order-chart" style="width: 800px; height: 500px;">Loading chart...</div>
+                    <div id="google_chart" style="width: 800px; height: 600px;">Loading chart...</div> 
+
+                    <div id="pie-chart" style="width: 800px; height: 600px;">Loading chart...</div>
+
+                    <div id="monthly-order-chart" style="width: 800px; height: 600px;">Loading chart...</div>
+        </div>
+
+
+        <!-- Audit Log List -->
+        <div id="auditlog_section" class="section-container" style="display: none;">
+            <button id="downloadLog">Download Log</button>
+            <button id="resetLog">Reset Log</button>
         </div>
 
         <!-- Low Stock List -->

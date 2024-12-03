@@ -39,9 +39,7 @@ def check_session():
 def log_action(action):
     logFile = open("log.txt","a")
     currentDate = datetime.now()
-    print(str(currentDate) + ": ", logFile)
-    print(action, logFile)
-    print("\n", logFile)
+    logFile.write(f"{currentDate}: {action}\n")
     logFile.close()
 
 #Send audit log out
@@ -50,13 +48,19 @@ def download_log():
     return send_file('log.txt', as_attachment=True)
 
 #Reset audit log file
-@app.route('/logReset')
+@app.route('/logReset', methods=['POST'])
 def reset_log():
-    os.remove("log.txt")
-    logFile = open("log.txt","a")
-    currentDate = datetime.now()
-    print(str(currentDate) + ": Log file was reset\n", logFile)
-    logFile.close()
+    log_file_path = "/app/log.txt"
+    print(f"Checking for file at: {log_file_path}")
+    if os.path.exists(log_file_path):
+        print("File exists. Deleting...")
+        os.remove(log_file_path)
+    else:
+        print("File does not exist.")
+    with open(log_file_path, "a") as logFile:
+        currentDate = datetime.now()
+        logFile.write(f"{currentDate}: Log file was reset\n")
+    return "Log file reset successfully", 200
 
 # Login
 # Check username and password
@@ -105,8 +109,8 @@ def logout():
 @app.route('/Inventory', methods=['GET'])
 def get_inventory():
     category = request.args.get('category')
-    product_id = request.args.get('productId')  # Get the ProductID parameter
-    state = request.args.get('state')  # Get the ProductID parameter
+    product_id = request.args.get('productId')
+    state = request.args.get('state')
 
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
@@ -210,9 +214,10 @@ def update_quantity():
                      unit_price * abs(adjustment_value), inventory_id)
                 )
 
+            action = "Employee #" + str(employee_id) + " successfully to updated inventory item # " + str(inventory_id) + " by " + str(adjustment_value)
+            log_action(action)
+
         conn.commit()
-        action = "Employee " + str(employee_id) + "successfully to updated inventory item " + str(inventory_id) + "by " + str(adjustment)
-        log_action(action)
         return jsonify({"message": "Quantity updated successfully"}), 200
 
     except Exception as e:
@@ -528,13 +533,14 @@ def revert_order():
             cursor.execute("DELETE FROM OrderDetails WHERE OrderID = %s", (order_id,))
             cursor.execute("DELETE FROM Orders WHERE OrderID = %s", (order_id,))
 
+            action = "Order #" + str(order_id) + " was reverted by Employee #" + str(session['employee_id'])
+            log_action(action)
+
         conn.commit()
-        action = "Order #" + str(order_id) + " was reverted"
-        log_action(action)
         return jsonify({"message": "Orders reverted and inventory updated successfully"}), 200
 
     except Exception as e:
-        action = "Order #" + str(order_id) + " failed to be reverted"
+        action = "Employee #" + str(session['employee_id']) + ": " + "Order #" + str(order_id) + " failed to be reverted"
         log_action(action)
         print(f"Error in revert_order: {str(e)}")
         return jsonify({"error": "Internal server error", "details": str(e)}), 500
