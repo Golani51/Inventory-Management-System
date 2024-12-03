@@ -33,7 +33,7 @@ async function initializePage() {
 
 // Hide all restricted sections if the user is not logged in
 function hideRestrictedSections() {
-    const restrictedSections = ['inventory_list', 'orders_section', 'short_list'];
+    const restrictedSections = ['inventory_list', 'orders_section', 'short_list', 'chart_section', 'auditlog_section'];
     restrictedSections.forEach(id => {
         const section = document.getElementById(id);
         if (section) section.style.display = 'none';
@@ -46,6 +46,10 @@ function hideRestrictedSections() {
     document.getElementById('user_greeting').style.display = 'none';
     document.getElementById('auditLog').style.display = 'none';
     Array.from(document.getElementsByClassName('adjustSelectedButton')).forEach(button => {
+        button.style.display = 'none';
+    });
+
+    Array.from(document.getElementsByClassName('revertOrderButton')).forEach(button => {
         button.style.display = 'none';
     });
 }
@@ -99,7 +103,7 @@ function showSection(sectionId) {
         return;
     }
 
-    const sections = document.querySelectorAll('#inventory_list, #orders_section, #short_list');
+    const sections = document.querySelectorAll('#inventory_list, #orders_section, #short_list, #chart_section, #auditlog_section');
     sections.forEach(section => section.style.display = 'none');
 
     const section = document.getElementById(sectionId);
@@ -190,8 +194,6 @@ function showSection(sectionId) {
                 Array.from(document.getElementsByClassName('revertOrderButton')).forEach(button => {
                     button.style.display = 'none';
                 });
-
-                //table.classList.remove('alternate-style');
             }
             
             document.querySelector('label[for="categoryFilter"]').style.marginLeft = '20px';
@@ -240,7 +242,50 @@ function showSection(sectionId) {
             resetFiltersAndViewMode();
             renderActiveFilters();
             fetchFilteredInventory();
+            
+        } else if (sectionId === 'chart_section'){
+            
+            document.getElementById('inventory_filter').style.display = 'none';
+
+            Array.from(document.getElementsByClassName('revertOrderButton')).forEach(button => {
+                button.style.display = 'none';
+            });
+
+            Array.from(document.getElementsByClassName('adjustSelectedButton')).forEach(button => {
+                button.style.display = 'none';
+            });
+
+            chartBuilder();
+
+        } else if (sectionId === 'auditlog_section'){
+            document.getElementById('inventory_filter').style.display = 'none';
+
+            Array.from(document.getElementsByClassName('revertOrderButton')).forEach(button => {
+                button.style.display = 'none';
+            });
+
+            Array.from(document.getElementsByClassName('adjustSelectedButton')).forEach(button => {
+                button.style.display = 'none';
+            });
+
+            // Download log file
+            document.getElementById('downloadLog').addEventListener('click', () => {
+                window.location.href = '/log';
+            });
+
+            // Reset log file
+            document.getElementById('resetLog').addEventListener('click', () => {
+                fetch('/logReset', { method: 'POST' })
+                    .then(response => {
+                        if (response.ok) {
+                            alert('Log file reset successfully.');
+                        } else {
+                            alert('Error resetting log file.');
+                        }
+                    });
+            });
         }
+
     } else {
         const inventoryFilter = document.getElementById('inventory_filter');
         inventoryFilter.style.display = 'none';

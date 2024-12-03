@@ -362,8 +362,8 @@ function enableLinks() {
     const tabs = {
         inventoryTab: 'inventory_list',
         ordersTab: 'orders_section',
-        chartsTab: '',
-        auditLog: '',
+        chartsTab: 'chart_section',
+        auditLog: 'auditlog_section',
     };
 
     Object.entries(tabs).forEach(([id, section]) => {

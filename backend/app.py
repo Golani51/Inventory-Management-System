@@ -36,13 +36,10 @@ def check_session():
         return jsonify({"error": "Not logged in"}), 401
 
 # Log to audit file
-def log_action():
-    action = request.json
+def log_action(action):
     logFile = open("log.txt","a")
     currentDate = datetime.now()
-    print(str(currentDate) + ": ", logFile)
-    print(action, logFile)
-    print("\n", logFile)
+    logFile.write(f"{currentDate}: {action}\n")
     logFile.close()
 
 #Send audit log out
@@ -51,13 +48,19 @@ def download_log():
     return send_file('log.txt', as_attachment=True)
 
 #Reset audit log file
-@app.route('/logReset')
+@app.route('/logReset', methods=['POST'])
 def reset_log():
-    os.remove("log.txt")
-    logFile = open("log.txt","a")
-    currentDate = datetime.now()
-    print(str(currentDate) + ": Log file was reset\n", logFile)
-    logFile.close()
+    log_file_path = "/app/log.txt"
+    print(f"Checking for file at: {log_file_path}")
+    if os.path.exists(log_file_path):
+        print("File exists. Deleting...")
+        os.remove(log_file_path)
+    else:
+        print("File does not exist.")
+    with open(log_file_path, "a") as logFile:
+        currentDate = datetime.now()
+        logFile.write(f"{currentDate}: Log file was reset\n")
+    return "Log file reset successfully", 200
 
 # Login
 # Check username and password
@@ -106,8 +109,8 @@ def logout():
 @app.route('/Inventory', methods=['GET'])
 def get_inventory():
     category = request.args.get('category')
-    product_id = request.args.get('productId')  # Get the ProductID parameter
-    state = request.args.get('state')  # Get the ProductID parameter
+    product_id = request.args.get('productId')
+    state = request.args.get('state')
 
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
@@ -211,9 +214,10 @@ def update_quantity():
                      unit_price * abs(adjustment_value), inventory_id)
                 )
 
+            action = "Employee #" + str(employee_id) + " successfully to updated inventory item # " + str(inventory_id) + " by " + str(adjustment_value)
+            log_action(action)
+
         conn.commit()
-        action = "Employee " + str(employee_id) + "successfully to updated inventory item " + str(inventory_id) + "by " + str(adjustment)
-        log_action(action)
         return jsonify({"message": "Quantity updated successfully"}), 200
 
     except Exception as e:
@@ -529,13 +533,14 @@ def revert_order():
             cursor.execute("DELETE FROM OrderDetails WHERE OrderID = %s", (order_id,))
             cursor.execute("DELETE FROM Orders WHERE OrderID = %s", (order_id,))
 
+            action = "Order #" + str(order_id) + " was reverted by Employee #" + str(session['employee_id'])
+            log_action(action)
+
         conn.commit()
-        action = "Order #" + str(order_id) + " was reverted"
-        log_action(action)
         return jsonify({"message": "Orders reverted and inventory updated successfully"}), 200
 
     except Exception as e:
-        action = "Order #" + str(order_id) + " failed to be reverted"
+        action = "Employee #" + str(session['employee_id']) + ": " + "Order #" + str(order_id) + " failed to be reverted"
         log_action(action)
         print(f"Error in revert_order: {str(e)}")
         return jsonify({"error": "Internal server error", "details": str(e)}), 500
@@ -568,6 +573,116 @@ def get_batch_order_details():
         return jsonify({"error": "Internal server error", "details": str(e)}), 500
     finally:
         cursor.close()
+        conn.close()
+
+# Endpoint to fetch order data for Google Chart
+@app.route('/chart-data', methods=['GET'])
+def fetch_chart_data():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        # Query to get aggregated order data
+        query = """
+            SELECT 
+                e.FirstName, 
+                e.LastName, 
+                p.ProductName, 
+                SUM(od.Quantity) AS TotalQuantity
+            FROM Orders o
+            LEFT JOIN OrderDetails od ON o.OrderID = od.OrderID
+            LEFT JOIN Products p ON od.ProductID = p.ProductID
+            LEFT JOIN Employees e ON o.EmployeeID = e.EmployeeID
+            GROUP BY e.EmployeeID, p.ProductName
+            ORDER BY e.FirstName, e.LastName, p.ProductName;
+        """
+        cursor.execute(query)
+        results = cursor.fetchall()
+
+        # Transform data for Google Charts (as a list of lists)
+        chart_data = [["Employee", "Product", "Total Quantity"]]
+        for row in results:
+            chart_data.append([
+                f"{row['FirstName']} {row['LastName']}", 
+                row['ProductName'], 
+                row['TotalQuantity']
+            ])
+
+        return jsonify(chart_data), 200
+
+    except Exception as e:
+        print("Error fetching chart data:", e)
+        return jsonify({"error": "Error fetching chart data"}), 500
+
+    finally:
+        conn.close()
+
+# pie chart function
+@app.route('/chart-data-pie', methods=['GET'])
+def fetch_pie_chart_data():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        # Query to calculate total ordered quantity for each product
+        query = """
+            SELECT 
+                p.ProductName AS product,
+                SUM(od.Quantity) AS total_quantity
+            FROM OrderDetails od
+            LEFT JOIN Products p ON od.ProductID = p.ProductID
+            GROUP BY p.ProductName
+            ORDER BY total_quantity DESC;
+        """
+        cursor.execute(query)
+        results = cursor.fetchall()
+
+        # Transform the data into a format suitable for Google Charts
+        chart_data = [["Product", "Total Quantity"]]
+        for row in results:
+            chart_data.append([row['product'], float(row['total_quantity'])])
+
+        return jsonify(chart_data), 200
+
+    except Exception as e:
+        print("Error fetching pie chart data:", e)
+        return jsonify({"error": "Error fetching pie chart data"}), 500
+
+    finally:
+        conn.close()
+
+# trend line graph function
+@app.route('/chart-data-monthly-orders', methods=['GET'])
+def fetch_monthly_order_data():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        # Query to calculate total orders per month
+        query = """
+            SELECT 
+                DATE_FORMAT(OrderDate, '%Y-%m') AS month,
+                COUNT(OrderID) AS total_orders
+            FROM Orders
+            WHERE OrderDate >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
+            GROUP BY DATE_FORMAT(OrderDate, '%Y-%m')
+            ORDER BY DATE_FORMAT(OrderDate, '%Y-%m');
+        """
+        cursor.execute(query)
+        results = cursor.fetchall()
+
+        # Transform the data into a format suitable for Google Charts
+        chart_data = [["Month", "Total Orders"]]
+        for row in results:
+            chart_data.append([row['month'], row['total_orders']])
+
+        return jsonify(chart_data), 200
+
+    except Exception as e:
+        print("Error fetching monthly order data:", e)
+        return jsonify({"error": "Error fetching monthly order data"}), 500
+
+    finally:
         conn.close()
 
 
