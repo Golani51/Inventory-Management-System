@@ -479,7 +479,7 @@ def update_stock_status():
 def get_low_stock():
     try:
         category = request.args.get('category')
-        inventory_id = request.args.get('orderId')
+        inventory_id = request.args.get('inventoryId')
         state = request.args.get('state')
 
         conn = get_db_connection()
