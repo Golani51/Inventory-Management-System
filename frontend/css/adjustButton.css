@@ -1,4 +1,8 @@
-/* Source: https://codepen.io/nourabusoud/pen/QaXLjJ */
+/*
+    FILE: adjustButton.css
+    ORIGINAL SOURCE: https://codepen.io/nourabusoud/pen/QaXLjJ
+    LATEST CHANGE BY: Date: Joshua Hur 12/4/24
+*/
 
 :root {
     --button-width: 70px;
@@ -7,6 +11,7 @@
     --btn-bg: #4B5968;
     --text-light: #fefefe;
 }
+
 .adjustSelectedButton, .revertOrderButton {
     font-size: 16px;
     font-family: "Montserrat","Helvetica Neue",Helvetica,Arial,sans-serif;

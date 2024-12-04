@@ -1,4 +1,8 @@
-/* Source: https://www.w3schools.com/howto/howto_js_slideshow.asp */
+/*
+    FILE: slide.css
+    ORIGINAL SOURCE: https://www.w3schools.com/howto/howto_js_slideshow.asp
+    LATEST CHANGE BY: Date: Joshua Hur 12/4/24
+*/
 
 .slideshow-container {
     display: flex;

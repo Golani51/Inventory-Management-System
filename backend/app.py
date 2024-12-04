@@ -1,3 +1,9 @@
+#
+#   FILE: app.py
+#   ORIGINAL AUTHOR: Joshua Hur
+#   LATEST CHANGE BY: Date: Joshua Hur 12/4/24
+#
+
 import os
 from flask import Flask, request, jsonify, send_from_directory, send_file, session
 from flask_bcrypt import Bcrypt

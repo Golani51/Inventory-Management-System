@@ -1,3 +1,9 @@
+//
+//  FILE: fetchInventory.js
+//  ORIGINAL AUTHOR: Joshua Hur
+//  LATEST CHANGE BY: Joshua Hur 12/2/24
+//
+
 let inputValues = {}; // Global store for user input values
 
 document.getElementById('searchProduct').addEventListener('keypress', function (event) {

@@ -1,3 +1,9 @@
+#
+# FILE: dockerfile
+# ORIGINAL AUTHOR: Joshua Hur
+# LATEST CHANGE BY: Joshua Hur 10/28/24
+#
+
 # Use a Python image
 FROM python:3.9
 

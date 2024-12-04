@@ -1,3 +1,9 @@
+#
+# FILE: docker-compose.yml
+# ORIGINAL AUTHOR: Joshua Hur
+# LATEST CHANGE BY: Joshua Hur 10/28/24
+#
+
 services:
   db:
     image: mysql:8
