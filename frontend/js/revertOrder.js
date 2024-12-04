@@ -1,3 +1,9 @@
+//
+//  FILE: revertOrder.js
+//  ORIGINAL AUTHOR: Joshua Hur
+//  LATEST CHANGE BY: Joshua Hur 12/2/24
+//
+
 async function revertSelectedOrders() {
     var errorCount = 0;
     const selectedCheckboxes = document.querySelectorAll('.item-checkbox:checked');

@@ -1,3 +1,9 @@
+//
+//  FILE: filter.js
+//  ORIGINAL AUTHOR: Joshua Hur
+//  LATEST CHANGE BY: Joshua Hur 12/3/24
+//
+
 // View mode change handler
 function changeViewMode() {
     const category = document.getElementById('categoryFilter').value; // Get the current category filter

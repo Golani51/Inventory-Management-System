@@ -1,3 +1,9 @@
+//
+//  FILE: main.js
+//  ORIGINAL AUTHOR: Joshua Hur
+//  LATEST CHANGE BY: Joshua Hur 12/4/24
+//
+
 // Default settings and configuration
 const DEFAULTS = {
     filters: {

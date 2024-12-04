@@ -1,3 +1,9 @@
+//
+//  FILE: chart.js
+//  ORIGINAL AUTHOR: Ben Maher
+//  LATEST CHANGE BY: Joshua Hur 12/4/24
+//
+
 // Initialize Google Chart
 function chartBuilder() {
     // Load the Google Charts library
@@ -98,6 +104,7 @@ function drawOrderChart() {
           }
       });
   }
+
   function loadAndRenderMonthlyOrderChart() {
       // Load the Google Charts library
       google.charts.load('current', { packages: ['corechart'] });

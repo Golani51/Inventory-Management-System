@@ -1,3 +1,8 @@
+//
+//  FILE: downloadAudit.js
+//  ORIGINAL AUTHOR: Joshua Hur
+//  LATEST CHANGE BY: Joshua Hur 12/3/24
+//
 
 async function logToBackend(message, status) {
     try {

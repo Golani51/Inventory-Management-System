@@ -1,4 +1,8 @@
-/* Source: https://www.w3schools.com/howto/howto_js_slideshow.asp */
+//
+//  FILE: slide.js
+//  ORIGINAL SOURCE: https://www.w3schools.com/howto/howto_js_slideshow.asp
+//  LATEST CHANGE BY: Joshua Hur 12/3/24
+//
 
 let slideIndex = 1;
 showSlides(slideIndex);

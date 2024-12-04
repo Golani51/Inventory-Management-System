@@ -1,3 +1,9 @@
+//
+//  FILE: modal.js
+//  ORIGINAL AUTHOR: Joshua Hur
+//  LATEST CHANGE BY: Joshua Hur 12/2/24
+//
+
 function toggleModal(modalId, button = null) {
     const modal = document.getElementById(modalId);
 
