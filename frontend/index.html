@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="./css/modal.css">
     <link rel="stylesheet" href="./css/filter.css">
     <link rel="stylesheet" href="./css/adjustButton.css">
+    <link rel="stylesheet" href="./css/slide.css">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital@0;1&display=swap" rel="stylesheet">
@@ -39,12 +41,13 @@
     <!-- Main Content Container -->
     <div class="main-content">
 
+        <img src="/css/img/front.png" id="frontImg">
         <!-- Login Section -->
         <div id="login_section">
             <form id="loginForm">
-                <label for="username">Username:</label>
-                <input type="username" id="username" name="username" required autocomplete="off"><br>
-                <label for="password">Password:</label>
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required autocomplete="off"><br>
+                <label for="password">Password</label>
                 <input type="password" id="password" name="password" required autocomplete="off"><br>
                 <button type="submit" id="loginButton">Login</button>
             </form>
@@ -116,18 +119,41 @@
 
         <!-- Chart Section -->
         <div id="chart_section" style="display: none;">
-                    <div id="google_chart" style="width: 800px; height: 600px;">Loading chart...</div> 
+            <div class="slideshow-container">
 
+                <div class="mySlides fade">
+                    <div id="google_chart" style="width: 800px; height: 600px;">Loading chart...</div>
+                </div>
+            
+                <div class="mySlides fade">
                     <div id="pie-chart" style="width: 800px; height: 600px;">Loading chart...</div>
-
+                </div>
+            
+                <div class="mySlides fade">
                     <div id="monthly-order-chart" style="width: 800px; height: 600px;">Loading chart...</div>
+                </div>
+            
+                <!-- Next and previous buttons -->
+                <a class="prev" onclick="plusSlides(-1)">&#10094;</a>
+                <a class="next" onclick="plusSlides(1)">&#10095;</a>       
+            </div>
+            <br>
+            
+            <div style="text-align:center; margin-top: 35px; z-index:10; position:relative;">
+                <span class="dot" onclick="currentSlide(1)"></span> 
+                <span class="dot" onclick="currentSlide(2)"></span> 
+                <span class="dot" onclick="currentSlide(3)"></span> 
+            </div>
         </div>
 
 
         <!-- Audit Log List -->
         <div id="auditlog_section" class="section-container" style="display: none;">
-            <button id="downloadLog">Download Log</button>
-            <button id="resetLog">Reset Log</button>
+            <div id="auditlog_container">
+                <p id="auditlog_notif">Export / Reset Audit Log</p>
+                <button id="downloadLog">Download Log</button>
+                <button id="resetLog">Reset Log</button>
+            </div>
         </div>
 
         <!-- Low Stock List -->
@@ -181,6 +207,9 @@
     <script src="./js/modal.js"></script>
     <script src="./js/revertOrder.js"></script>
     <script src="./js/chart.js"></script>
+    <script src="./js/slide.js"></script>
+    <script src="./js/downloadAudit.js"></script>
+
 
 </body>
 

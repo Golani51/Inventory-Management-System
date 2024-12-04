@@ -1,21 +1,19 @@
-// Download audit log
-async function downloadAudit(){
+
+async function logToBackend(message, status) {
     try {
-        const response = await fetch('/log', {
-            method: 'GET'
+        const response = await fetch('/log-action-helper', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message, status })
         });
 
-        if (response.ok) {
-            const data = await response.json();
-            const url = window.URL.createObjectURL(data);
-            const page = document.createElement("download");
-            page.href = url;
-            page.download = 'log.txt';
-            page.click();
-            window.URL.revokeObjectURL(url)
+        if (!response.ok) {
+            const error = await response.json();
+            console.error('Failed to log action to backend:', error.error);
+        } else {
+            console.log('Action logged successfully to backend.');
         }
     } catch (error) {
-        console.error('Error downloading audit log', error);
-        alert('An error while downloading the audit log. Please try again later.');
+        console.error('Error logging action to backend:', error);
     }
 }

@@ -246,10 +246,16 @@ span.material-symbols-outlined {
     padding: 10px 5px 10px 2px;
 }
 
-#loginNotif {
-    font-family: "Montserrat", sans-serif;
-    color: red;
-    font-size: 12px;
+#frontImg {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 35%;
+    left: 49%;
+    transform: translate(-50%, -50%);
+    padding: 20px;
 }
 
 #login_section {
@@ -258,18 +264,18 @@ span.material-symbols-outlined {
     align-items: center;
     justify-content: center;
     position: absolute;
-    top: 50%;
+    top: 65%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background-color: #f9f9f9;
-    padding: 20px;
+    background-color: #fefefe;
+    padding: 30px 15px 45px 15px;
     border-radius: 8px;
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
     height: 90px;
 }
 
 /* Ensuring consistent height for select and input elements */
-select, input[type="username"], input[type="password"] {
+select, input[type="text"], input[type="password"] {
     height: 30px;
     padding: 5px 10px;
     font-size: 12px;
@@ -279,11 +285,37 @@ select, input[type="username"], input[type="password"] {
 }
 
 #loginForm {
-    margin-top: 20px;
+    font-family: "Montserrat", sans-serif;
+    font-size: 13px;
+    margin-top: 25px;
+}
+
+#loginForm label {
+    margin-top: 5px;
+    margin-left: 10px;
+    z-index: 10;
+    position: relative;
+    background-color: #ffffff;
+}
+
+#loginForm input {
+    width: 100%; /* Make input fields take the full width of the form */
+    max-width: 300px; /* Optional: Limit the maximum width of the input fields */
+    margin-bottom: 10px;
+    margin-top: -20px;
+    background-color: white !important;
+}
+
+input:-webkit-autofill {
+    appearance: none;
+    background-color: white !important; /* Your desired color */
+    background-image: none !important; /* Remove autofill styling */
+    color: black !important; /* Your desired text color */
+    box-shadow: 0 0 0px 1000px white inset !important; /* Ensures no yellow/gray autofill background */
 }
 
 #loginButton {
-    margin: 10px 0px 10px 90px;
+    margin: 5px 0px 10px 90px;
 }
 
 #loginNotif {
@@ -292,12 +324,15 @@ select, input[type="username"], input[type="password"] {
     align-items: center;
     justify-content: center;
     position: absolute;
-    top: 50%;
+    top: 65%;
     left: 50%;
     transform: translate(-50%, -50%);
     padding: 20px;
     border-radius: 8px;
-    margin-top: 90px;
+    margin-top: 100px;
+    font-family: "Montserrat", sans-serif;
+    color: red;
+    font-size: 12px;
 }
 
 .disabled {
@@ -314,4 +349,31 @@ select, input[type="username"], input[type="password"] {
     box-shadow: 0 0 2px grey;
     font-family: "Montserrat", sans-serif;
     font-size: 12px;
+    cursor: pointer;
+}
+
+#auditlog_container {
+    position: absolute;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 30px 27px 30px;
+    border-radius: 8px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #fefefe;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+#auditlog_notif {
+    font-family: "Montserrat", sans-serif;
+    font-size: 15px;
+    display:relative;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 30px;
+}
+
+#auditlog_container #downloadLog {
+    margin-right: 10px;
 }

@@ -36,10 +36,15 @@ def check_session():
         return jsonify({"error": "Not logged in"}), 401
 
 # Log to audit file
-def log_action(action):
+def log_action(action, status):
     logFile = open("log.txt","a")
     currentDate = datetime.now()
-    logFile.write(f"{currentDate}: {action}\n")
+
+    employee_id = session.get('employee_id')
+    if not employee_id:
+        logFile.write(f"{currentDate}: {status} {action}\n")
+    else:
+        logFile.write(f"{currentDate}: {session['username']} {status} {action}\n")
     logFile.close()
 
 #Send audit log out
@@ -53,14 +58,28 @@ def reset_log():
     log_file_path = "/app/log.txt"
     print(f"Checking for file at: {log_file_path}")
     if os.path.exists(log_file_path):
-        print("File exists. Deleting...")
         os.remove(log_file_path)
-    else:
-        print("File does not exist.")
     with open(log_file_path, "a") as logFile:
         currentDate = datetime.now()
         logFile.write(f"{currentDate}: Log file was reset\n")
     return "Log file reset successfully", 200
+
+@app.route('/log-action-helper', methods=['POST'])
+def log_action_helper():
+    try:
+        data = request.json
+        message = data.get('message')
+        status = data.get('status')
+
+        if not message or not status:
+            return jsonify({"error": "Both 'message' and 'status' are required."}), 400
+
+        log_action(message, status)
+        return jsonify({"message": "Action logged successfully."}), 200
+
+    except Exception as e:
+        return jsonify({"error": f"Failed to log action: {str(e)}"}), 500
+
 
 # Login
 # Check username and password
@@ -86,12 +105,11 @@ def login():
             session['lastname'] = user['LastName']
 
             action = "Employee #" + str(session['employee_id']) + ": " + str(session['firstname']) + " " + str(session['lastname']) + " has logged in"
-            log_action(action)
+            log_action(action, 'SUCCESS')
             return jsonify({"username": session['username'], "role": session['role'], "firstname": session['firstname'], "lastname": session['lastname']}), 200
         
         else:
-            action = "Invalid login attempt by user " + user['Username']
-            log_action(action)
+            log_action(action, 'FAILURE')
             return jsonify({"error": "Invalid credentials"}), 401
         
     except Exception as e:
@@ -101,7 +119,7 @@ def login():
 @app.route('/logout', methods=['POST'])
 def logout():
     action = "Employee #" + str(session['employee_id']) + ": " + str(session['firstname']) + " " + str(session['lastname']) + " has logged out"
-    log_action(action)
+    log_action(action, 'SUCCESS')
     session.clear()  # Clear all session data
     return jsonify({"message": "Logged out successfully"}), 200
 
@@ -214,15 +232,13 @@ def update_quantity():
                      unit_price * abs(adjustment_value), inventory_id)
                 )
 
-            action = "Employee #" + str(employee_id) + " successfully to updated inventory item # " + str(inventory_id) + " by " + str(adjustment_value)
-            log_action(action)
+                action = "Employee #" + str(employee_id) + " successfully to updated inventory item #" + str(inventory_id) + " by " + str(adjustment_value)
+                log_action(action, 'SUCCESS')
 
         conn.commit()
         return jsonify({"message": "Quantity updated successfully"}), 200
 
     except Exception as e:
-        action = "Employee " + str(employee_id) + "failed to update inventory item " + str(inventory_id) + "by " + str(adjustment)
-        log_action(action)
         return jsonify({"error": "Quantity update was not successful"}), 500
     finally:
         cursor.close()
@@ -534,14 +550,14 @@ def revert_order():
             cursor.execute("DELETE FROM Orders WHERE OrderID = %s", (order_id,))
 
             action = "Order #" + str(order_id) + " was reverted by Employee #" + str(session['employee_id'])
-            log_action(action)
+            log_action(action, 'SUCCESS')
 
         conn.commit()
         return jsonify({"message": "Orders reverted and inventory updated successfully"}), 200
 
     except Exception as e:
         action = "Employee #" + str(session['employee_id']) + ": " + "Order #" + str(order_id) + " failed to be reverted"
-        log_action(action)
+        log_action(action, 'FAILURE')
         print(f"Error in revert_order: {str(e)}")
         return jsonify({"error": "Internal server error", "details": str(e)}), 500
 

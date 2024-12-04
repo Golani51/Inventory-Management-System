@@ -404,6 +404,9 @@ async function adjustSelectedItems() {
             enableLinks();
 
             displayModal('WARNING', errorCount, 'No items were selected.');
+
+            const message = 'No items were selected.';
+            logToBackend(message, 'FAILURE');
             document.getElementById('errorModal').style.height = '205px';
             document.getElementById('errorModalMessage').style.marginTop = '-10px';
             document.getElementById('errorModalMessage').style.marginBottom = '-5px';
@@ -424,8 +427,10 @@ async function adjustSelectedItems() {
 
         // Validation: Check if adjustment value is valid
         if (isNaN(adjustmentValue) || adjustmentValue <= 0) {
-            errorMessages.push(`Invalid adjustment value for Inventory ID ${inventoryID}.`);
+            const message = `Invalid adjustment value for Inventory ID ${inventoryID}.`;
+            errorMessages.push(message);
             errorCount ++;
+            logToBackend(`Inventory item #${inventoryID} was not adjusted because of invalid adjustment.`, 'FAILURE');
             return;
         }
 
@@ -439,14 +444,18 @@ async function adjustSelectedItems() {
 
         // Validation: Ensure the new quantity is within valid limits
         if (newQuantity > maxQuantity) {
-            errorMessages.push(`Cannot exceed Max Quantity for Inventory ID ${inventoryID}.`);
+            const message = `Cannot exceed Max Quantity for Inventory ID ${inventoryID}.`;
+            errorMessages.push(message);
             errorCount ++;
+            logToBackend(`Inventory item #${inventoryID} was not adjusted because the result quantity cannot exceed its max quantity.`, 'FAILURE');
             return;
         }
 
         if (newQuantity < 0) {
-            errorMessages.push(`Quantity cannot be less than 0 for Inventory ID ${inventoryID}.`);
+            const message = `Quantity cannot be less than 0 for Inventory ID ${inventoryID}.`;
+            errorMessages.push(message);
             errorCount ++;
+            logToBackend(`Inventory item #${inventoryID} was not adjusted because the adjusted quantity cannot be less than 0`, 'FAILURE');
             return;
         }
 
@@ -799,18 +808,37 @@ async function printShort() {
 
         // Add header to the dropdown table
         const dropdownHeader = document.createElement('tr');
-        dropdownHeader.innerHTML = `
-            <th>Select</th>
-            <th>Inventory ID</th>
-            <th>Product Name</th>
-            <th>Category</th>
-            <th>Location</th>
-            <th>State</th>
-            <th>Current Quantity</th>
-            <th>Max Quantity</th>
-            <th>Adjustment</th>
-            <th>Stock Status</th>
+
+        if (userRole === 'admin') {
+            dropdownTable.classList.add('alternate-style');
+            dropdownHeader.innerHTML = `
+                <th>Select</th>
+                <th>Inventory ID</th>
+                <th>Product Name</th>
+                <th>Category</th>
+                <th>Location</th>
+                <th>State</th>
+                <th>Current Quantity</th>
+                <th>Max Quantity</th>
+                <th>Adjustment</th>
+                <th>Stock Status</th>
+            `;
+        } else {
+            dropdownTable.classList.remove('alternate-style');
+
+            headerRow.innerHTML = `
+            <th>ORDER NUMBER</th>
+            <th>ORDERED ITEM</th>
+            <th>ITEM CATEGORY</th>
+            <th>SUPPLIER</th>
+            <th>QUANTITY</th>
+            <th>UNIT PRICE</th>
+            <th>TOTAL AMOUNT</th>
+            <th>REQUESTER</th>
+            <th>REQUESTED DATE</th>
+            <th>ASSIGNED LOCATION</th>
         `;
+        }
         dropdownTable.appendChild(dropdownHeader);
 
         // Add inventory details

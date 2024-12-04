@@ -117,7 +117,9 @@ function drawOrderChart() {
                   title: 'Monthly Order Trends',
                   hAxis: { title: 'Month' },
                   vAxis: { title: 'Total Orders' },
-                  chartArea: { width: '70%', height: '70%' },
+                  width: 800, 
+                  height: 600,
+                  chartArea: { width: '70%', height: '70%' }, // Area for drawing the chart
                   legend: { position: 'none' },
               };
   
