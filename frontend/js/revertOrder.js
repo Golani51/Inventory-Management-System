@@ -27,7 +27,9 @@ async function revertSelectedOrders() {
             document.getElementById('notif_button').disabled = false;
             document.getElementById('acc_button').disabled = false;
             enableLinks();
-            displayModal('WARNING', 1, 'No items were selected.');
+            const message = 'No items were selected.';
+            logToBackend('No order was not reverted because no items were selected.', 'FAILURE');
+            displayModal('WARNING', 1, message);
             document.getElementById('errorModal').style.height = '205px';
             document.getElementById('errorModalMessage').style.marginTop = '-10px';
             document.getElementById('errorModalMessage').style.marginBottom = '-5px';
@@ -68,8 +70,10 @@ async function revertSelectedOrders() {
             const timeDifference = now - orderDate;
 
             if (timeDifference > 24 * 60 * 60 * 1000) {
+                const message = `OrderID ${order.OrderID} exceeds 24-hour cancellation period.`;
+                logToBackend(`OrderID ${order.OrderID} was not reverted because it exceeds 24-hour cancellation period.`, 'FAILURE');
                 errorCount++;
-                errorMessages.push(`OrderID ${order.OrderID} exceeds 24-hour cancellation period.`);
+                errorMessages.push(message);
             } else {
                 orders.forEach(order => {
                     const matchingAdjustment = adjustments.find(adj => Number(adj.OrderID) === Number(order.OrderID));

@@ -41,12 +41,13 @@
     <!-- Main Content Container -->
     <div class="main-content">
 
+        <img src="/css/img/front.png" id="frontImg">
         <!-- Login Section -->
         <div id="login_section">
             <form id="loginForm">
-                <label for="username">Username:</label>
-                <input type="username" id="username" name="username" required autocomplete="off"><br>
-                <label for="password">Password:</label>
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required autocomplete="off"><br>
+                <label for="password">Password</label>
                 <input type="password" id="password" name="password" required autocomplete="off"><br>
                 <button type="submit" id="loginButton">Login</button>
             </form>
@@ -148,8 +149,11 @@
 
         <!-- Audit Log List -->
         <div id="auditlog_section" class="section-container" style="display: none;">
-            <button id="downloadLog">Download Log</button>
-            <button id="resetLog">Reset Log</button>
+            <div id="auditlog_container">
+                <p id="auditlog_notif">Export / Reset Audit Log</p>
+                <button id="downloadLog">Download Log</button>
+                <button id="resetLog">Reset Log</button>
+            </div>
         </div>
 
         <!-- Low Stock List -->
@@ -204,6 +208,8 @@
     <script src="./js/revertOrder.js"></script>
     <script src="./js/chart.js"></script>
     <script src="./js/slide.js"></script>
+    <script src="./js/downloadAudit.js"></script>
+
 
 </body>
 

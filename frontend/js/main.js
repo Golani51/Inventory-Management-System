@@ -59,6 +59,7 @@ function configureUIAfterLogin(data) {
     isLoggedIn = true; // Update the logged-in state
 
     // Display user information
+    document.getElementById('frontImg').style.display = 'none';
     document.getElementById('login_section').style.display = 'none';
     document.getElementById('logoutButton').style.display = 'inline';
     document.getElementById('logoutButton').style.marginLeft = '60px';
@@ -244,7 +245,6 @@ function showSection(sectionId) {
             fetchFilteredInventory();
             
         } else if (sectionId === 'chart_section'){
-            
             document.getElementById('inventory_filter').style.display = 'none';
 
             Array.from(document.getElementsByClassName('revertOrderButton')).forEach(button => {
@@ -278,9 +278,19 @@ function showSection(sectionId) {
                 fetch('/logReset', { method: 'POST' })
                     .then(response => {
                         if (response.ok) {
-                            alert('Log file reset successfully.');
+                            displayModal('SUCCESS', null, 'Audit log reset was successful.');
+                            document.getElementById('errorModal').style.height = '205px';
+                            document.getElementById('errorModalMessage').style.marginTop = '-10px';
+                            document.getElementById('errorModalMessage').style.marginBottom = '-5px';
+                            document.getElementById('errorModalMessage').style.marginLeft = '0px';
+                            document.getElementById('errorModalMessage').style.textAlign = 'center';
                         } else {
-                            alert('Error resetting log file.');
+                            displayModal('WARNING', null, 'Audit log reset was unsuccessful. Contact Admin.');
+                            document.getElementById('errorModal').style.height = '205px';
+                            document.getElementById('errorModalMessage').style.marginTop = '-10px';
+                            document.getElementById('errorModalMessage').style.marginBottom = '-5px';
+                            document.getElementById('errorModalMessage').style.marginLeft = '0px';
+                            document.getElementById('errorModalMessage').style.textAlign = 'center';
                         }
                     });
             });
@@ -375,6 +385,7 @@ document.getElementById('logoutButton').addEventListener('click', async function
 
             hideRestrictedSections();
             login();
+            document.getElementById('frontImg').style.display = 'block';
 
             console.log('Logged out successfully.');
         } else {
