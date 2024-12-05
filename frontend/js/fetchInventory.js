@@ -574,7 +574,7 @@ async function adjustSelectedItems() {
 
             // Update stock statuses
             await updateStockStatus();
-            await fetchInventory();
+            showSection('inventory_list');
 
             // Refresh the low stock list if needed
             if (document.getElementById('short_list').style.display === 'block') {

@@ -8,7 +8,8 @@ import os
 from flask import Flask, request, jsonify, send_from_directory, send_file, session
 from flask_bcrypt import Bcrypt
 import mysql.connector
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
+import pytz
 
 
 app = Flask(__name__, static_folder='frontend', template_folder='frontend')
@@ -44,13 +45,15 @@ def check_session():
 # Log to audit file
 def log_action(action, status):
     logFile = open("log.txt","a")
-    currentDate = datetime.now()
+    currentDate = datetime.now(pytz.utc)
+    est_timezone = pytz.timezone('US/Eastern')
+    currentDate_EST = currentDate.astimezone(est_timezone)
 
     employee_id = session.get('employee_id')
     if not employee_id:
-        logFile.write(f"{currentDate}: {status} {action}\n")
+        logFile.write(f"{currentDate_EST}: {status} {action}\n")
     else:
-        logFile.write(f"{currentDate}: {session['username']} {status} {action}\n")
+        logFile.write(f"{currentDate_EST}: {session['username']} {status} {action}\n")
     logFile.close()
 
 #Send audit log out
@@ -66,8 +69,11 @@ def reset_log():
     if os.path.exists(log_file_path):
         os.remove(log_file_path)
     with open(log_file_path, "a") as logFile:
-        currentDate = datetime.now()
-        logFile.write(f"{currentDate}: Log file was reset\n")
+        currentDate = datetime.now(pytz.utc)
+        est_timezone = pytz.timezone('US/Eastern')
+        currentDate_EST = currentDate.astimezone(est_timezone)
+
+        logFile.write(f"{currentDate_EST}: Log file was reset\n")
     return "Log file reset successfully", 200
 
 @app.route('/log-action-helper', methods=['POST'])
@@ -227,8 +233,13 @@ def update_quantity():
                            (new_quantity, inventory_id))
 
             if adjustment_value > 0:
+                currentDate = datetime.now(pytz.utc)
+                est_timezone = pytz.timezone('US/Eastern')
+                currentDate_EST = currentDate.astimezone(est_timezone)
+                formatted_date = currentDate_EST.isoformat()
+
                 cursor.execute("INSERT INTO Orders (EmployeeID, OrderDate) VALUES (%s, %s)",
-                               (employee_id, datetime.now()))
+                               (employee_id, formatted_date))
                 order_id = cursor.lastrowid
 
                 cursor.execute(
@@ -238,7 +249,7 @@ def update_quantity():
                      unit_price * abs(adjustment_value), inventory_id)
                 )
 
-                action = "Employee #" + str(employee_id) + " successfully to updated inventory item #" + str(inventory_id) + " by " + str(adjustment_value)
+                action = "Updated inventory item #" + str(inventory_id) + " by " + str(adjustment_value)
                 log_action(action, 'SUCCESS')
 
         conn.commit()
