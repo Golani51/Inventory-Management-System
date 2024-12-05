@@ -361,7 +361,7 @@ function renderOrders(data, container) {
                 <td>$${order.UnitPrice}</td>
                 <td>$${order.TotalAmount}</td>
                 <td>${order.FirstName} ${order.LastName}</td>
-                <td>${order.OrderDate}</td>
+                <td>${formatDateToLocal(order.OrderDate)}</td>
                 <td>${order.AssignedLocation}, ${order.LocationState}</td>
             `;
         }
@@ -375,7 +375,7 @@ function renderOrders(data, container) {
                 <td>$${order.UnitPrice}</td>
                 <td>$${order.TotalAmount}</td>
                 <td>${order.FirstName} ${order.LastName}</td>
-                <td>${order.OrderDate}</td>
+                <td>${formatDateToLocal(order.OrderDate)}</td>
                 <td>${order.AssignedLocation}, ${order.LocationState}</td>
             `;
         }

@@ -22,3 +22,7 @@ async function logToBackend(message, status) {
         console.error('Error logging action to backend:', error);
     }
 }
+
+function formatDateToLocal(dateString) {
+    return dateString.replace(' GMT', '').trim();
+}

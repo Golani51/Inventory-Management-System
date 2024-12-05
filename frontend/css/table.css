@@ -1,7 +1,7 @@
 /*
     FILE: table.css
     ORIGINAL AUTHOR: Joshua Hur
-    LATEST CHANGE BY: Date: Joshua Hur 12/3/24
+    LATEST CHANGE BY: Date: Joshua Hur 12/4/24
 */
 
 table {
@@ -33,7 +33,6 @@ table th, table td {
 .inventory-product-table-header tr th{
     padding-left:14px;
     background-color: #ffffff;
-    box-shadow: 0 5px 10px #e1e5ee;
 }
 
 

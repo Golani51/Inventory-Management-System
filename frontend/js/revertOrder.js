@@ -72,7 +72,7 @@ async function revertSelectedOrders() {
         const errorMessages = [];
 
         orders.forEach(order => {
-            const orderDate = new Date(order.OrderDate);
+            const orderDate = new Date(order.OrderDate.replace(' GMT', ''));
             const timeDifference = now - orderDate;
 
             if (timeDifference > 24 * 60 * 60 * 1000) {
